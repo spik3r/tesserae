@@ -1,0 +1,10 @@
+{
+  "name": "tesserae",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Themeable, inert web presentation components for generated dashboards and reports",
+  "exports": {".": "./src/index.js", "./theme.css": "./src/theme.css"},
+  "scripts": {"test": "node --test", "build:examples": "node scripts/examples.js"},
+  "engines": {"node": ">=22"}
+}

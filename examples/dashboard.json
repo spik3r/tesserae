@@ -1,0 +1,57 @@
+{
+  "version": "tesserae/v1",
+  "title": "Fictional dashboard",
+  "subtitle": "Reusable components, synthetic data",
+  "kind": "dashboard",
+  "components": [
+    {
+      "type": "metric",
+      "title": "Example items",
+      "value": 12
+    },
+    {
+      "type": "metric",
+      "title": "Open tasks",
+      "value": 0
+    },
+    {
+      "type": "metric",
+      "title": "Historical baseline",
+      "state": "unknown"
+    },
+    {
+      "type": "status",
+      "title": "Review state",
+      "label": "Illustrative only",
+      "tone": "neutral"
+    },
+    {
+      "type": "progress",
+      "title": "Sample checklist",
+      "label": "Steps demonstrated",
+      "value": 3,
+      "max": 5
+    },
+    {
+      "type": "table",
+      "title": "Invented work items",
+      "columns": [
+        "Record",
+        "Description",
+        "State"
+      ],
+      "rows": [
+        [
+          "DEMO-A",
+          "Review sample wording",
+          "Open"
+        ],
+        [
+          "DEMO-B",
+          "Check fictional layout",
+          "Complete"
+        ]
+      ]
+    }
+  ]
+}
