@@ -11,7 +11,7 @@ const metrics = [
 const report = [
  {type:'section',title:'01 / Summary',paragraphs:['This invented handover demonstrates reusable presentation components. No operational conclusions are intended.']},
  {type:'callout',title:'Recommendation',text:'Use this as an example of layout, not as evidence of any real system.'},
- {type:'table',title:'Synthetic evidence',columns:['Record','Observation','Next step'],rows:[['SAMPLE-1','Example instructions are ambiguous','Clarify the invented wording'],['SAMPLE-2','Example glossary is complete','No change needed']]},
+ {type:'table',title:'Synthetic evidence',rowHeaders:true,columns:['Record','Observation','Next step'],rows:[['SAMPLE-1','Example instructions are ambiguous','Clarify the invented wording'],['SAMPLE-2','Example glossary is complete','No change needed']]},
  {type:'section',title:'02 / Method and limits',paragraphs:['All names, records and observations are invented. This renderer does not calculate the truth of a report or run any analysis.']}
 ];
 mkdirSync('examples/generated',{recursive:true});

@@ -6,7 +6,7 @@ Components:
 - metric: title, finite numeric value, optional unit/description; or state missing/unknown/not-applicable with no value.
 - status: title, label, tone neutral/positive/warning/negative. Label carries meaning independently of colour.
 - progress: title, label, finite value and positive max; value must lie in [0,max].
-- table: title, 1–8 column labels, 0–200 rows with exactly matching plain-text cells. A focusable scroll region provides access on narrow screens.
+- table: title, 1–8 column labels, 0–200 rows with exactly matching plain-text cells. Optional `rowHeaders: true` makes the first cell of each data row a non-empty row header; omitted/undefined or false keeps ordinary data cells. Other rowHeaders values are rejected. A focusable scroll region provides access on narrow screens.
 - section: title and up to 16 plain-text paragraphs.
 - callout: title and text.
 

@@ -19,6 +19,7 @@
     {
       "type": "table",
       "title": "Synthetic evidence",
+      "rowHeaders": true,
       "columns": [
         "Record",
         "Observation",

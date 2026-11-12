@@ -37,3 +37,30 @@ test('optional text fields reject supplied non-text values including falsy ones'
  assert.doesNotThrow(()=>renderPage(page([{type:'metric',title:'Metric',value:0,unit:'',description:''}],{subtitle:''})));
  assert.throws(()=>renderPage(page([{type:'metric',title:'Metric',state:'unknown',unit:'x'.repeat(8001)}])));
 });
+
+test('opt-in row headers identify rows without replacing column headers or data cells',()=>{
+ const table={type:'table',title:'Synthetic inventory',rowHeaders:true,columns:['Item','Quantity'],rows:[['Sample A','0'],['Sample B','2']]};
+ const html=renderPage(page([table]));
+ assert.match(html,/<thead><tr><th scope="col">Item<\/th><th scope="col">Quantity<\/th><\/tr><\/thead>/);
+ assert.match(html,/<tbody><tr><th scope="row">Sample A<\/th><td>0<\/td><\/tr><tr><th scope="row">Sample B<\/th><td>2<\/td><\/tr><\/tbody>/);
+ assert.match(html,/<caption>Synthetic inventory<\/caption>/);
+ for(const rowHeaders of [undefined,false]) {
+  const ordinary=renderPage(page([{...table,rowHeaders}]));
+  assert.doesNotMatch(ordinary,/scope="row"/);
+  assert.match(ordinary,/<tr><td>Sample A<\/td><td>0<\/td><\/tr>/);
+ }
+ const empty=renderPage(page([{...table,rows:[]}]));
+ assert.match(empty,/<tbody><tr><td colspan="2">No records<\/td><\/tr><\/tbody>/);
+ assert.doesNotMatch(empty,/scope="row"/);
+});
+
+test('row header labels stay plain text and the option is strictly boolean',()=>{
+ const table={type:'table',title:'Rows',columns:['Item','Value'],rows:[['<script>"&','']]};
+ const html=renderPage(page([{...table,rowHeaders:true}]));
+ assert.match(html,/<th scope="row">&lt;script&gt;&quot;&amp;<\/th><td><\/td>/);
+ assert.doesNotMatch(html,/<script>/);
+ for(const rowHeaders of [null,0,1,'true','false',{},[]]) assert.throws(()=>renderPage(page([{...table,rowHeaders}])),/rowHeaders must be boolean/);
+ for(const label of ['', ' \t', '\x00', 'x'.repeat(8001)]) assert.throws(()=>renderPage(page([{...table,rowHeaders:true,rows:[[label,'1']]}])));
+ assert.doesNotThrow(()=>renderPage(page([{...table,rows:[['','1']]}])));
+ assert.match(renderPage(page([{...table,rowHeaders:true,columns:['Item'],rows:[['Sample']]}])),/<tbody><tr><th scope="row">Sample<\/th><\/tr><\/tbody>/);
+});

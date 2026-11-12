@@ -45,6 +45,8 @@ function table(c) {
   const columns = list(c.columns, 8);
   if (!columns.length) throw new TypeError('Table needs columns');
   const rows = list(c.rows, 200);
+  const rowHeaders = c.rowHeaders === undefined ? false : c.rowHeaders;
+  if (typeof rowHeaders !== 'boolean') throw new TypeError('rowHeaders must be boolean');
   let cellUnits = 0;
   for (const row of rows) {
     if (list(row, 8).length !== columns.length) throw new TypeError('Table row width mismatch');
@@ -56,7 +58,9 @@ function table(c) {
   }
   const body = rows.map(row => {
     if (list(row, 8).length !== columns.length) throw new TypeError('Table row width mismatch');
-    return `<tr>${row.map(cell => `<td>${text(cell)}</td>`).join('')}</tr>`;
+    return `<tr>${row.map((cell, index) => rowHeaders && index === 0
+      ? `<th scope="row">${heading(cell)}</th>`
+      : `<td>${text(cell)}</td>`).join('')}</tr>`;
   }).join('');
   return `<section class="ts-card ts-wide"><div class="ts-table-scroll" role="region" tabindex="0" aria-label="${heading(c.title)}"><table><caption>${heading(c.title)}</caption><thead><tr>${columns.map(col=>`<th scope="col">${heading(col)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${columns.length}">No records</td></tr>`}</tbody></table></div></section>`;
 }
