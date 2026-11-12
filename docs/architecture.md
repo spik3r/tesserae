@@ -10,7 +10,7 @@ Components:
 - section: title and up to 16 plain-text paragraphs.
 - callout: title and text.
 
-At most 64 components, 8,000 UTF-16 code units per text value, 200,000 text code units per table, 1 MiB UTF-8 final document. Unsupported components/options are refused. This JS API is not a strict JSON parser: callers must handle duplicate keys and enforce upstream schemas. Additional object properties are ignored, never interpolated. The renderer performs no aggregate computations, inference, network access or arbitrary HTML insertion. It reads its bundled CSS once. Caller input is HTML-escaped; links, executable markup, images and expression evaluation are deliberately absent.
+At most 64 components, 8,000 UTF-16 code units per text value, 200,000 text code units per table, 1 MiB UTF-8 final document. Unsupported components/options are refused. Lists must be dense arrays with an own element at every index; sparse arrays are rejected rather than silently losing content. Optional unit, description and subtitle fields may be omitted, undefined or empty strings, but other non-string values are rejected (including null, false and zero). This JS API is not a strict JSON parser: callers must handle duplicate keys and enforce upstream schemas. Additional object properties are ignored, never interpolated. The renderer performs no aggregate computations, inference, network access or arbitrary HTML insertion. It reads its bundled CSS once. Caller input is HTML-escaped; links, executable markup, images and expression evaluation are deliberately absent.
 
 ## Foundry boundary
 
