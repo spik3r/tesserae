@@ -1,6 +1,7 @@
 /** Static presentation primitives. Strings are text, never trusted markup. */
 import { readFileSync } from 'node:fs';
-const css = readFileSync(new URL('./theme.css', import.meta.url), 'utf8');
+import { themes, modes, densities, layouts } from '../common/options.js';
+const css = readFileSync(new URL('./tesserae.css', import.meta.url), 'utf8');
 const MAX_TEXT = 8000;
 function text(value) {
   if (typeof value !== 'string' || value.length > MAX_TEXT || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(value)) throw new TypeError('Expected bounded plain text');
@@ -64,10 +65,10 @@ const renderers = {metric,status,progress,table,section,callout};
 /** Render a plain-text presentation model into a complete inert HTML document. */
 export function renderPage(model) {
   if (!model || typeof model !== 'object' || model.version !== 'tesserae/v1') throw new TypeError('Expected tesserae/v1');
-  const theme = choice(model.theme ?? 'slate', ['slate','sand']);
-  const mode = choice(model.mode ?? 'auto', ['auto','light','dark']);
-  const density = choice(model.density ?? 'comfortable', ['comfortable','compact']);
-  const kind = choice(model.kind ?? 'dashboard', ['dashboard','report']);
+  const theme = choice(model.theme ?? 'slate', themes);
+  const mode = choice(model.mode ?? 'auto', modes);
+  const density = choice(model.density ?? 'comfortable', densities);
+  const kind = choice(model.kind ?? 'dashboard', layouts);
   let renderedBytes = 0;
   const components = list(model.components, 64).map(c => {
     if (!c || typeof c !== 'object' || !Object.hasOwn(renderers, c.type)) throw new TypeError('Unsupported component');

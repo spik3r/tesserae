@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {renderPage,componentTypes} from '../src/index.js';
+import {renderPage,componentTypes} from '../html/index.js';
 const page=(components,extra={})=>({version:'tesserae/v1',title:'Demo',components,...extra});
 test('all supported components render inert, deterministic semantic HTML',()=>{
  const model=page([{type:'metric',title:'Zero',value:0},{type:'metric',title:'Data',state:'unknown'},{type:'status',title:'Status',label:'Needs review',tone:'warning'},{type:'progress',title:'Progress',label:'Items',value:2,max:3},{type:'table',title:'Rows',columns:['A'],rows:[]},{type:'section',title:'Narrative',paragraphs:['Fictional.']},{type:'callout',title:'Note',text:'Example'}]);

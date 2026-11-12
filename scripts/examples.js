@@ -1,5 +1,5 @@
 import {mkdirSync,writeFileSync} from 'node:fs';
-import {renderPage} from '../src/index.js';
+import {renderPage} from '../html/index.js';
 const metrics = [
  {type:'metric',title:'Example items',value:12},
  {type:'metric',title:'Open tasks',value:0},

@@ -1,0 +1,7 @@
+# Common contracts
+
+Framework-neutral semantic vocabulary lives here. `options.js` exports frozen lists of supported themes, modes, densities and layouts without Node, browser or framework dependencies. The current component data contract is documented in [architecture](../docs/architecture.md); HTML validation is implemented by the HTML renderer, not falsely advertised as a cross-framework runtime validator.
+
+Adapters should agree on meaning: zero differs from missing/unknown/not-applicable; status has a visible label; progress has a bounded value and maximum; tables have headers and text cells. They may expose idiomatic APIs, but cannot silently change those semantics. No DOM nodes, JSX, Liquid, CSS class rendering or application-specific models belong in this layer.
+
+Before adding an adapter, introduce shared fixtures to prove equivalent content, labels and invalid-data handling. Keep escaping at each renderer's output boundary, not in shared input data. Do not pass raw HTML between adapters.

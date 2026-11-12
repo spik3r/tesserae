@@ -1,11 +1,33 @@
 # Tesserae
 
-Themeable web components for generated dashboards and narrative reports. **Tesserae owns presentation; Foundry owns model validation, generation and provenance.**
+Reusable presentation components and themes, starting with **plain HTML/CSS**. Foundry is a future consumer, not the owner of this library. All demonstration content is fictional.
 
-This first slice is a dependency-free Node renderer producing inert, self-contained HTML. It is not a browser framework, a Foundry replacement or a published package. All examples are fictional.
+## Layers
+
+```text
+common/    Framework-neutral vocabulary and component contract
+themes/   Shared semantic CSS tokens, skins, density and colour modes
+html/     Implemented: plain CSS assets and a static Node HTML renderer
+react/    Planned: React components (not implemented or exported)
+solid/    Planned: Solid components (not implemented or exported)
+jekyll/   Planned: Liquid includes + built CSS (not implemented or exported)
+```
+
+Shared layers do not import a renderer. Future adapters consume shared tokens and the same semantic component contract, but own their framework-specific markup/lifecycle. No React, Solid or Ruby dependency is required today.
+
+- **[Shared contract](common/README.md):** metrics, status, progress, narrative sections, callouts and tables.
+- **[Themes](themes/README.md):** slate/sand skins; independent light/dark/auto modes and compact/comfortable density.
+- **[Framework-less HTML/CSS](html/README.md):** use the built stylesheet directly, or generate inert, self-contained HTML with Node.
+- **[Architecture](docs/architecture.md)** and **[roadmap](docs/plan.md):** integration boundaries and incremental delivery.
+
+## Start without a framework
+
+Copy `html/tesserae.css` beside your HTML and use the documented `ts-*` classes. See [the hand-written example](html/example.html). This route needs **no Node or client JavaScript**.
+
+For deterministic generation at build time (Node 22+):
 
 ```js
-import { renderPage } from './src/index.js';
+import { renderPage } from './html/index.js';
 const html = renderPage({
   version: 'tesserae/v1', title: 'Sample dashboard',
   theme: 'slate', mode: 'auto', density: 'comfortable',
@@ -13,24 +35,18 @@ const html = renderPage({
 });
 ```
 
-## Core pieces
-
-- **Components:** metrics, status, progress, narrative sections, callouts and accessible plain-text tables.
-- **Themes:** semantic colour tokens with slate/sand skins, independent light/dark/auto mode and compact/comfortable spacing.
-- **Layouts:** dashboard grid and linear report, with narrow-screen table scrolling and A4 print CSS.
-- **Data contract:** bounded plain text and finite numbers; missing, unknown and not-applicable metrics are explicit and distinct from zero.
-
-See [contract and architecture](docs/architecture.md) for integration boundaries and [plan](docs/plan.md) for next slices.
+The root package export still points to this HTML renderer. No framework package has been published.
 
 ## Develop
 
-Node 22 or newer, no dependency installation required:
+No dependency installation required:
 
 ```sh
-npm test
-npm run build:examples
+npm test                 # verifies committed CSS is current, then tests
+npm run build:styles     # themes + HTML styles -> html/tesserae.css
+npm run build:examples   # styles + four deterministic fictional examples
 ```
 
 Generated examples in `examples/generated/` are reproducible local previews. Static structural checks pass; **screen/print visual QA has not been completed**. CSS requests table-header repetition and row break avoidance, but pagination remains browser-dependent. No pixel-exact PDF or page numbering guarantee.
 
-No private reference images, source reports, branding or operational datasets belong in this repository. Do not mistake the example content for evidence about a real system.
+No private reference images, source reports, branding or operational datasets belong in this repository. Do not mistake example content for evidence about a real system.
