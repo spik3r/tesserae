@@ -47,6 +47,8 @@ npm run build:styles     # themes + HTML styles -> html/tesserae.css
 npm run build:examples   # styles + four deterministic fictional examples
 ```
 
+GitHub Actions runs the contract tests and rebuilds examples on Node 22 and 24, then rejects generated-asset drift. The workflow uses read-only repository permissions, pinned actions and no dependency installation. These checks do not replace screen/print or assistive-technology QA.
+
 Generated examples in `examples/generated/` are reproducible local previews. Static structural checks pass; **screen/print visual QA has not been completed**. CSS requests table-header repetition and row break avoidance, but pagination remains browser-dependent. No pixel-exact PDF or page numbering guarantee.
 
 No private reference images, source reports, branding or operational datasets belong in this repository. Do not mistake example content for evidence about a real system.
