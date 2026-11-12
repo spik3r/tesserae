@@ -13,11 +13,16 @@ function choice(value, values) {
 }
 function list(value, max) {
   if (!Array.isArray(value) || value.length > max) throw new TypeError('Expected bounded list');
+  for (let i = 0; i < value.length; i++) {
+    if (!Object.hasOwn(value, i)) throw new TypeError('Expected dense list');
+  }
   return value;
 }
 function heading(value) { if (typeof value !== 'string' || !value.trim()) throw new TypeError('Heading cannot be empty'); return text(value); }
 function metric(c) {
   const state = choice(c.state ?? 'value', ['value','missing','unknown','not-applicable']);
+  if (c.unit !== undefined) text(c.unit);
+  if (c.description !== undefined) text(c.description);
   let value;
   if (state === 'value') {
     if (typeof c.value !== 'number' || !Number.isFinite(c.value)) throw new TypeError('Metric needs finite numeric value');
@@ -42,7 +47,7 @@ function table(c) {
   const rows = list(c.rows, 200);
   let cellUnits = 0;
   for (const row of rows) {
-    if (!Array.isArray(row) || row.length !== columns.length) throw new TypeError('Table row width mismatch');
+    if (list(row, 8).length !== columns.length) throw new TypeError('Table row width mismatch');
     for (const cell of row) {
       if (typeof cell !== 'string') throw new TypeError('Expected plain-text cell');
       cellUnits += cell.length;
@@ -50,7 +55,7 @@ function table(c) {
     }
   }
   const body = rows.map(row => {
-    if (!Array.isArray(row) || row.length !== columns.length) throw new TypeError('Table row width mismatch');
+    if (list(row, 8).length !== columns.length) throw new TypeError('Table row width mismatch');
     return `<tr>${row.map(cell => `<td>${text(cell)}</td>`).join('')}</tr>`;
   }).join('');
   return `<section class="ts-card ts-wide"><div class="ts-table-scroll" role="region" tabindex="0" aria-label="${heading(c.title)}"><table><caption>${heading(c.title)}</caption><thead><tr>${columns.map(col=>`<th scope="col">${heading(col)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${columns.length}">No records</td></tr>`}</tbody></table></div></section>`;
@@ -69,6 +74,7 @@ export function renderPage(model) {
   const mode = choice(model.mode ?? 'auto', modes);
   const density = choice(model.density ?? 'comfortable', densities);
   const kind = choice(model.kind ?? 'dashboard', layouts);
+  if (model.subtitle !== undefined) text(model.subtitle);
   let renderedBytes = 0;
   const components = list(model.components, 64).map(c => {
     if (!c || typeof c !== 'object' || !Object.hasOwn(renderers, c.type)) throw new TypeError('Unsupported component');
