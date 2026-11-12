@@ -21,3 +21,19 @@ test('bounded text, lists and final UTF8 output',()=>{
 test('themes/density/mode do not change content contract',()=>{
  const model=page([{type:'metric',title:'Count',value:12,unit:'items'}]);for(const theme of ['slate','sand'])for(const mode of ['auto','dark','light'])for(const density of ['compact','comfortable'])assert.match(renderPage({...model,theme,mode,density}),/12 <small>items<\/small>/);
 });
+
+test('reject sparse lists instead of silently dropping content or headers',()=>{
+ const table={type:'table',title:'Rows',columns:['A'],rows:[]};
+ for(const components of [Array(1),[{...table,columns:Array(1)}],[{...table,rows:Array(1)}],[{...table,rows:[Array(1)]}],[{type:'section',title:'Text',paragraphs:Array(1)}]]) assert.throws(()=>renderPage(page(components)));
+ const inherited=Array(1); Object.setPrototypeOf(inherited,{0:'Inherited',__proto__:Array.prototype});
+ assert.throws(()=>renderPage(page([{...table,columns:inherited}])),/dense list/);
+});
+
+test('optional text fields reject supplied non-text values including falsy ones',()=>{
+ for(const invalid of [false,0,NaN,null,{},[]]) {
+  for(const field of ['unit','description']) assert.throws(()=>renderPage(page([{type:'metric',title:'Metric',value:0,[field]:invalid}])));
+  assert.throws(()=>renderPage(page([],{subtitle:invalid})));
+ }
+ assert.doesNotThrow(()=>renderPage(page([{type:'metric',title:'Metric',value:0,unit:'',description:''}],{subtitle:''})));
+ assert.throws(()=>renderPage(page([{type:'metric',title:'Metric',state:'unknown',unit:'x'.repeat(8001)}])));
+});
