@@ -37,6 +37,16 @@ const html = renderPage({
 
 The root package export still points to this HTML renderer. No framework package has been published.
 
+To render an existing JSON model from a checkout, without installing packages:
+
+```sh
+node bin/tesserae.js --help
+node bin/tesserae.js examples/report.json > report.html
+node bin/tesserae.js - < examples/dashboard.json > dashboard.html
+```
+
+The CLI accepts one filepath or `-` for stdin, allows up to 1 MiB of strict UTF-8 JSON, and writes standalone HTML to stdout. Shell redirection creates or truncates the destination; choose a separate path from the input. See [CLI limits and errors](html/README.md#json-command-line-interface).
+
 ## Component gallery
 
 [Open the gallery index](examples/generated/gallery/index.html) for all 12 theme/mode/density combinations using identical fictional data. Every supported component, explicit empty states, metric absence states, long text and escaped markup are included. See [the review checklist](docs/gallery.md) for the manual checks still needed.
