@@ -47,7 +47,7 @@ npm run build:styles     # themes + HTML styles -> html/tesserae.css
 npm run build:examples   # styles + four deterministic fictional examples
 ```
 
-GitHub Actions runs the contract tests and rebuilds examples on Node 22 and 24, then rejects generated-asset drift. The workflow uses read-only repository permissions, pinned actions and no dependency installation. These checks do not replace screen/print or assistive-technology QA.
+GitHub Actions runs the contract tests and rebuilds examples on Node 22 and 24, then rejects generated-asset drift. The workflow uses read-only repository permissions, pinned actions and no dependency installation. Automated accessibility contracts check native progress labels, explicit metric absence states, and calculated WCAG contrast (at least 4.5:1) for opaque semantic text tokens against the declared page, card and soft surfaces in both skins, dark/auto-dark and print palettes. The contrast test reads source tokens, not browser-computed styles; it does not verify cascade behavior, forced colours, native progress appearance or decorative borders. These checks do not replace screen/print or assistive-technology QA.
 
 Generated examples in `examples/generated/` are reproducible local previews. Static structural checks pass; **screen/print visual QA has not been completed**. CSS requests table-header repetition and row break avoidance, but pagination remains browser-dependent. No pixel-exact PDF or page numbering guarantee.
 
