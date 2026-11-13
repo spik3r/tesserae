@@ -10,7 +10,7 @@ themes/   Shared semantic CSS tokens, skins, density and colour modes
 html/     Implemented: plain CSS assets and a static Node HTML renderer
 react/    Planned: React components (not implemented or exported)
 solid/    Planned: Solid components (not implemented or exported)
-jekyll/   Local-only Liquid proof + synthetic fixture (unverified, not exported)
+jekyll/   Local-only Liquid proof + tested synthetic fixture (not exported)
 ```
 
 Shared layers do not import a renderer. Future adapters consume shared tokens and the same semantic component contract, but own their framework-specific markup/lifecycle. No React, Solid or Ruby dependency is required today.

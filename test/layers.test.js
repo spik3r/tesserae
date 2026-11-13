@@ -46,8 +46,9 @@ test('only implemented layers are exported; reserved adapters are honest', async
   }
 });
 
-test('Jekyll proof is explicitly unexported and unverified', async () => {
+test('Jekyll proof stays unexported with explicit integration and manual QA limits', async () => {
   assert.match(read('jekyll/README.md'), /not exported or installable/);
-  assert.match(read('jekyll/README.md'), /not been verified/);
+  assert.match(read('jekyll/README.md'), /not verification of the full GitHub Pages plugin stack or actual blog/);
+  assert.match(read('jekyll/README.md'), /assistive-technology QA remain pending/);
   await assert.rejects(import('tesserae/jekyll'), {code:'ERR_PACKAGE_PATH_NOT_EXPORTED'});
 });
