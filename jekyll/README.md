@@ -70,3 +70,29 @@ Independent source review and the six synthetic builds passed. Any later changes
 must repeat these checks. Blog integration still needs its own compatibility
 review, including Pages plugins, SEO/feed tags, code highlighting and routes.
 Keyboard, visual, print and assistive-technology QA remain pending.
+
+## Repeatable output-contract verification
+
+After each **real Jekyll build**, run the read-only fixture verifier against its
+destination. For example, from the Tesserae repository:
+
+```sh
+node scripts/verify-jekyll.js --directory /path/to/full-fixture/_site --scenario full --baseurl /synthetic-preview
+node scripts/verify-jekyll.js --directory /path/to/full-fixture/_site-root --scenario full --baseurl ''
+```
+
+Repeat for `minimal` and `empty`, using each scenario's separate build
+destination. It checks expected escaped strings, native summary structure,
+permalink/date, root/subpath stylesheet links, exact current CSS bytes, absent
+optional metadata and empty-state/stale-post output. A missing build or mismatch
+fails with a nonzero exit status. No files are written, no builds run, and no
+network or browser access occurs.
+
+This is a deliberately exact contract for the known synthetic fixture, **not**
+a general HTML parser, sanitizer, content validator or visual/accessibility
+audit. It is not suitable for arbitrary blogs. The Node test suite exercises
+the verifier with hand-authored output and corruption cases, not actual Liquid
+execution; passing Node CI does not claim the six real Jekyll builds ran.
+The verifier itself has not yet been rerun against real builds in the current
+cloud environment, which has no Ruby/Jekyll runtime. Earlier real-build results
+above describe the adapter proof, not execution of this new verifier.
