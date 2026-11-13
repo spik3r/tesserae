@@ -93,6 +93,8 @@ a general HTML parser, sanitizer, content validator or visual/accessibility
 audit. It is not suitable for arbitrary blogs. The Node test suite exercises
 the verifier with hand-authored output and corruption cases, not actual Liquid
 execution; passing Node CI does not claim the six real Jekyll builds ran.
-The verifier itself has not yet been rerun against real builds in the current
-cloud environment, which has no Ruby/Jekyll runtime. Earlier real-build results
-above describe the adapter proof, not execution of this new verifier.
+The verifier has also passed against six fresh real Jekyll 3.10.0 / Liquid
+4.0.4 builds on Ruby 4.0.5: full/minimal/empty at root and
+/synthetic-preview. These builds used the existing isolated local bundle.
+This validates generated output contracts, not visual, print, keyboard or
+assistive-technology behaviour.
