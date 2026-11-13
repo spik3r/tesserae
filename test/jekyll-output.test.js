@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {verifyJekyll} from '../scripts/verify-jekyll.js';
 const postPath='notes/2020/01/02/synthetic-notes/';
@@ -51,4 +52,15 @@ test('verifier rejects invalid contract and CLI arguments',()=>{
  assert.throws(()=>verifyJekyll({scenario:'full',baseurl:'https://external.invalid'}),/baseurl/);
  assert.throws(()=>execFileSync(process.execPath,['scripts/verify-jekyll.js','--directory','x'],{stdio:'pipe'}),/Usage:/);
  withFixture('empty','',f=>assert.match(execFileSync(process.execPath,['scripts/verify-jekyll.js','--directory',f.directory,'--scenario','empty','--baseurl',''],{encoding:'utf8'}),/not visual/));
+});
+
+test('CLI executes through symlink aliases instead of silently succeeding',()=>{
+ withFixture('empty','',f=>{
+  const alias=join(f.directory,'verifier-alias.js');
+  symlinkSync(fileURLToPath(new URL('../scripts/verify-jekyll.js',import.meta.url)),alias);
+  assert.throws(()=>execFileSync(process.execPath,[alias],{stdio:'pipe'}),/Usage:/);
+  assert.match(execFileSync(process.execPath,[alias,'--directory',f.directory,'--scenario','empty','--baseurl',''],{encoding:'utf8'}),/output contracts passed/);
+  writeFileSync(join(f.directory,'assets/tesserae.css'),'stale');
+  assert.throws(()=>execFileSync(process.execPath,[alias,'--directory',f.directory,'--scenario','empty','--baseurl',''],{stdio:'pipe'}),/CSS differs/);
+ });
 });
