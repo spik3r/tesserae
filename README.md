@@ -37,6 +37,10 @@ const html = renderPage({
 
 The root package export still points to this HTML renderer. No framework package has been published.
 
+## Component gallery
+
+[Open the gallery index](examples/generated/gallery/index.html) for all 12 theme/mode/density combinations using identical fictional data. Every supported component, explicit empty states, metric absence states, long text and escaped markup are included. See [the review checklist](docs/gallery.md) for the manual checks still needed.
+
 ## Develop
 
 No dependency installation required:
@@ -44,7 +48,7 @@ No dependency installation required:
 ```sh
 npm test                 # verifies committed CSS is current, then tests
 npm run build:styles     # themes + HTML styles -> html/tesserae.css
-npm run build:examples   # styles + four deterministic fictional examples
+npm run build:examples   # styles + fictional examples and 12 gallery variants
 ```
 
 GitHub Actions runs the contract tests and rebuilds examples on Node 22 and 24, then rejects generated-asset drift. The workflow uses read-only repository permissions, pinned actions and no dependency installation. Automated accessibility contracts check native progress labels, explicit metric absence states, and calculated WCAG contrast (at least 4.5:1) for opaque semantic text tokens against the declared page, card and soft surfaces in both skins, dark/auto-dark and print palettes. The contrast test reads source tokens, not browser-computed styles; it does not verify cascade behavior, forced colours, native progress appearance or decorative borders. These checks do not replace screen/print or assistive-technology QA.
