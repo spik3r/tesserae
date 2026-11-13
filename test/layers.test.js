@@ -40,8 +40,15 @@ test('only implemented layers are exported; reserved adapters are honest', async
   for (const [name, target] of Object.entries(pkg.exports)) {
     assert.ok(existsSync(new URL(`../${target}`, import.meta.url)), `${name} resolves`);
   }
-  for (const framework of ['react', 'solid', 'jekyll']) {
+  for (const framework of ['react', 'solid']) {
     assert.match(read(`${framework}/README.md`), /not implemented, exported or installable/);
     await assert.rejects(import(`tesserae/${framework}`), {code:'ERR_PACKAGE_PATH_NOT_EXPORTED'});
   }
+});
+
+test('Jekyll proof stays unexported with explicit integration and manual QA limits', async () => {
+  assert.match(read('jekyll/README.md'), /not exported or installable/);
+  assert.match(read('jekyll/README.md'), /not verification of the full GitHub Pages plugin stack or actual blog/);
+  assert.match(read('jekyll/README.md'), /assistive-technology QA remain pending/);
+  await assert.rejects(import('tesserae/jekyll'), {code:'ERR_PACKAGE_PATH_NOT_EXPORTED'});
 });

@@ -1,0 +1,7 @@
+# Fictional disposable test site; never a replacement blog configuration.
+title: 'Fictional <Garden> & Notes'
+url: https://example.invalid
+baseurl: /synthetic-preview
+markdown: kramdown
+permalink: /notes/:year/:month/:day/:title/
+exclude: [Gemfile, Gemfile.lock, README.md]

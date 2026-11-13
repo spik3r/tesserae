@@ -1,0 +1,8 @@
+source "https://rubygems.org"
+gem "jekyll", "= 3.10.0"
+gem "liquid", "= 4.0.4"
+# Explicit runtime dependencies omitted by older transitive gemspecs.
+# base64/bigdecimal were removed from newer Ruby's default gem set.
+gem "base64", "= 0.3.0"
+gem "bigdecimal", "= 4.1.3"
+gem "kramdown-parser-gfm", "= 1.1.0"

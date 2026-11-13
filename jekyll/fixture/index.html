@@ -1,0 +1,12 @@
+---
+layout: default
+title: 'Synthetic <Notes> & Updates'
+---
+{% include tesserae/header.html title=page.title description="Fictional examples only, not migrated blog content." %}
+<section class="ts-grid" aria-label="Recent posts">
+{% for post in site.posts %}
+  {% include tesserae/post-summary.html post=post %}
+{% else %}
+  <p>No posts yet.</p>
+{% endfor %}
+</section>

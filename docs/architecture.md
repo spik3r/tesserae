@@ -28,7 +28,7 @@ common/ + themes/
        ├── html/     (implemented: CSS + build-time Node renderer)
        ├── react/    (planned)
        ├── solid/    (planned)
-       └── jekyll/   (planned)
+       └── jekyll/   (experimental proof; synthetic builds verified)
 ```
 
 Dependencies point from adapters to shared layers, never the reverse or sideways to another adapter. The shared CSS token contract is already reusable; runtime component validation remains HTML-specific until another adapter proves a shared validator useful. Layouts and framework lifecycle belong to their adapters. Framework-neutral does not mean one HTML string renderer must serve every framework.

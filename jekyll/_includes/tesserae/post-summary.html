@@ -1,0 +1,7 @@
+{% comment %}Pass a Jekyll post, not an external URL or raw HTML model. Caller owns the h1.{% endcomment %}
+<article class="ts-card">
+  <h2><a href="{{ include.post.url | relative_url | escape }}">{{ include.post.title | escape }}</a></h2>
+  <p><time datetime="{{ include.post.date | date: '%Y-%m-%d' }}">{{ include.post.date | date: '%B %-d, %Y' }}</time></p>
+  {% if include.post.description %}<p>{{ include.post.description | escape }}</p>{% endif %}
+  {% if include.post.tags.size > 0 %}<ul aria-label="Tags">{% for tag in include.post.tags %}<li>{{ tag | escape }}</li>{% endfor %}</ul>{% endif %}
+</article>
