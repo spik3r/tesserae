@@ -1,0 +1,23 @@
+{
+  "name": "tesserae",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Themeable, inert web presentation components for generated dashboards and reports",
+  "exports": {
+    ".": "./html/index.js",
+    "./html": "./html/index.js",
+    "./html/tesserae.css": "./html/tesserae.css",
+    "./theme.css": "./html/tesserae.css",
+    "./themes/tokens.css": "./themes/tokens.css",
+    "./common/options": "./common/options.js"
+  },
+  "scripts": {
+    "test": "node scripts/styles.js --check && node --test",
+    "build:styles": "node scripts/styles.js",
+    "build:examples": "node scripts/styles.js && node scripts/examples.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
