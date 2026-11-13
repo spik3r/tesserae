@@ -14,6 +14,23 @@ Component classes include `ts-card`, `ts-metric`, `ts-status`, `ts-callout` and 
 
 `components.css` owns HTML-specific layout and print rules. `tesserae.css` is generated from shared themes plus these rules and checked by `npm test`. A CSS-only page does not gain the Node model validator automatically; callers must ensure valid values and safely escape their data.
 
+## JSON command-line interface
+
+Run `node bin/tesserae.js --help` from the repository root, or use the executable `./bin/tesserae.js`. Node 22+ is required; no package installation or build is needed. The package also declares a `tesserae` bin for local package consumers. Paths resolve from the caller's working directory, including when the executable is invoked through a symlink.
+
+```sh
+node bin/tesserae.js examples/report.json > report.html
+node bin/tesserae.js - < examples/dashboard.json > dashboard.html
+```
+
+Supply exactly one regular-file path or `-` for stdin. Symlinks to regular input files are accepted. Use `./-name.json` for a filename beginning with a dash; there are no other flags except `--help` and `-h`. Directories and special-file paths are rejected; pipe producers through stdin instead. Stdin waits for EOF for inputs within the limit; there is no timeout.
+
+Input is capped at 1 MiB (1,048,576 bytes), before UTF-8 decoding or JSON parsing. Reads stop after at most one additional byte to detect overflow, including on stdin. Invalid UTF-8 is rejected rather than replaced; a leading BOM is rejected. JSON follows `JSON.parse` semantics, including last-value-wins duplicate keys. Additional object properties are ignored by the existing renderer. This CLI does not add a schema or change the [model contract](../docs/architecture.md).
+
+The existing renderer separately limits the complete UTF-8 HTML document to 1 MiB. HTML is fully rendered before any output is written, so input and model failures leave stdout empty. Success writes exactly the renderer's standalone HTML, with inline CSS, escaped text and no scripts or remote assets. The CLI opens no browser, makes no network requests and writes no output files itself. Shell redirection can create or truncate files before the CLI runs, even on failure; use a destination different from the input.
+
+Exit status is `0` for rendering or help, `2` for invalid arguments, and `1` for input, rendering or output failures (including a broken pipe). Diagnostics go to stderr and omit input content, file paths and exception stacks. A rendering error can mean an invalid model, excessive rendered output, or missing renderer assets. A failed output write may leave partial HTML at the destination; no atomic output guarantee is made. Help writes usage text to stdout instead of HTML.
+
 ## Table row headers
 
 For tables whose first column identifies each row, set `rowHeaders: true` on the table model. The renderer uses `<th scope="row">` for that first cell while preserving `<th scope="col">` column labels and ordinary `<td>` data cells. Row labels must be non-empty plain text; no labels or identifiers are inferred. The default remains ordinary data cells. The fictional report demonstrates this option. For hand-written HTML, use these same native elements and scopes. Structural tests cover the markup; screen-reader and visual/print QA remain unverified.

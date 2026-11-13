@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Themeable, inert web presentation components for generated dashboards and reports",
+  "bin": {
+    "tesserae": "./bin/tesserae.js"
+  },
   "exports": {
     ".": "./html/index.js",
     "./html": "./html/index.js",
