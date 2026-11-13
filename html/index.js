@@ -65,13 +65,42 @@ function table(c) {
   }).join('');
   return `<section class="ts-card ts-wide"><div class="ts-table-scroll" role="region" tabindex="0" aria-label="${heading(c.title)}"><table><caption>${heading(c.title)}${c.description ? ` <span class="ts-table-description">${text(c.description)}</span>` : ''}</caption><thead><tr>${columns.map(col=>`<th scope="col">${heading(col)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${columns.length}">No records</td></tr>`}</tbody></table></div></section>`;
 }
+function metadata(c) {
+  const entries = list(c.entries, 32);
+  return `<section class="ts-card ts-wide"><h2>${heading(c.title)}</h2><dl class="ts-metadata">${entries.map(entry => {
+    if (!entry || typeof entry !== 'object') throw new TypeError('Expected metadata entry');
+    return `<div><dt>${heading(entry.label)}</dt><dd>${heading(entry.value)}</dd></div>`;
+  }).join('')}</dl>${entries.length ? '' : '<p>No metadata</p>'}</section>`;
+}
+function groupedTable(c) {
+  const groups = list(c.groups, 16);
+  // One component has one shared budget, not a multiplied per-group allowance.
+  let totalRows = 0, totalText = 0;
+  // Validate the shared table contract even when there are no groups.
+  table({...c, rows: []});
+  const rendered = groups.map(group => {
+    if (!group || typeof group !== 'object') throw new TypeError('Expected table group');
+    const rows = list(group.rows, 200);
+    totalRows += rows.length;
+    if (totalRows > 200) throw new RangeError('Grouped table exceeds 200 rows');
+    for (const row of rows) {
+      for (const cell of list(row, 8)) {
+        if (typeof cell !== 'string') throw new TypeError('Expected plain-text cell');
+        totalText += cell.length;
+        if (totalText > 200000) throw new RangeError('Grouped table text exceeds bounded budget');
+      }
+    }
+    return table({title: group.title, description: group.description, columns: c.columns, rows, rowHeaders: c.rowHeaders});
+  }).join('');
+  return `<section class="ts-card ts-wide ts-table-group"><h2>${heading(c.title)}</h2>${c.description ? `<p>${text(c.description)}</p>` : ''}${rendered || '<p>No groups</p>'}</section>`;
+}
 function section(c) {
   return `<section class="ts-card ts-wide"><h2>${heading(c.title)}</h2>${list(c.paragraphs, 16).map(p=>`<p>${text(p)}</p>`).join('')}</section>`;
 }
 function callout(c) {
   return `<aside class="ts-card ts-callout ts-wide"><h2>${heading(c.title)}</h2><p>${text(c.text)}</p></aside>`;
 }
-const renderers = {metric,status,progress,table,section,callout};
+const renderers = {metric,status,progress,table,section,callout,metadata,'grouped-table':groupedTable};
 /** Render a plain-text presentation model into a complete inert HTML document. */
 export function renderPage(model) {
   if (!model || typeof model !== 'object' || model.version !== 'tesserae/v1') throw new TypeError('Expected tesserae/v1');

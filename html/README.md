@@ -22,3 +22,11 @@ For tables whose first column identifies each row, set `rowHeaders: true` on the
 ## Table context
 
 Set a table's optional `description` to plain text explaining units, abbreviations or missing-value conventions. It appears on a separate line inside the native `<caption>`, keeping the explanation attached to the table without generated IDs or extra focus stops. The scroll region keeps the short table title as its accessible label. Omitted, undefined or empty descriptions retain the original title-only caption; other non-string values are rejected, and the usual text/output bounds apply. This supplies context, not automatic interpretation of cells or an assistive-technology certification.
+
+## Report metadata and grouped tables
+
+Use `metadata` for ordered label/value pairs under a title. It renders a native `<dl>` with `<dt>` labels and `<dd>` values, using `ts-metadata` for a responsive definition grid. Values must be explicit non-empty text, including caller-selected labels such as “Unknown”. No timestamps, owners or conclusions are invented.
+
+Use `grouped-table` for evidence with shared column meanings and independently named groups. The parent title is a heading; every group renders a native caption, repeated column headers and the same optional row-header semantics as an ordinary table. Group descriptions supply local context. Each group has its own keyboard-focusable horizontal scroll area. The component shares one 200-row/200,000-cell-text budget across groups, preventing grouping from multiplying limits. Group order and row order are exactly caller order; no filtering, totals or classification is performed.
+
+See `examples/report.json` for both components. Print CSS requests metadata pair and table row break avoidance, but no browser pagination, responsive appearance or assistive-technology verification is claimed. The existing preview restriction has not been retried.
