@@ -51,7 +51,13 @@ export function verifyJekyll({directory, scenario, baseurl}) {
   contains(post, scenario === 'full' ? 'No actual blog content or identifiers are reused.' : 'Synthetic content without optional description or tags.');
 }
 
-if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
+function isEntrypoint() {
+  // Imports from stdin/eval/embedded callers may have no real script filename.
+  if (!process.argv[1]) return false;
+  try { return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url)); }
+  catch { return false; }
+}
+if (isEntrypoint()) {
   const args=process.argv.slice(2);
   assert.ok(args.length === 6 && args[0] === '--directory' && args[2] === '--scenario' && args[4] === '--baseurl',
     'Usage: node scripts/verify-jekyll.js --directory PATH --scenario full|minimal|empty --baseurl ""|/synthetic-preview');

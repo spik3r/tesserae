@@ -64,3 +64,9 @@ test('CLI executes through symlink aliases instead of silently succeeding',()=>{
   assert.throws(()=>execFileSync(process.execPath,[alias,'--directory',f.directory,'--scenario','empty','--baseurl',''],{stdio:'pipe'}),/CSS differs/);
  });
 });
+
+test('module imports from stdin do not treat dash as a script file',()=>{
+ const url=new URL('../scripts/verify-jekyll.js',import.meta.url).href;
+ const output=execFileSync(process.execPath,['--input-type=module','-'],{input:`const m=await import(${JSON.stringify(url)}); console.log(typeof m.verifyJekyll);`,encoding:'utf8'});
+ assert.equal(output.trim(),'function');
+});
