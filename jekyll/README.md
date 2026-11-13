@@ -28,6 +28,18 @@ system-temp directory containing only synthetic fixture files, includes and
 current prebuilt CSS. It never writes to an existing blog. Preparation requires
 Node, but the resulting Jekyll site itself does not.
 
+Prepare each edge case in its own fresh directory rather than editing the full
+fixture by hand:
+
+```sh
+node scripts/jekyll-fixture.js --scenario full    # default: escaped text + tags
+node scripts/jekyll-fixture.js --scenario minimal # post without description/tags
+node scripts/jekyll-fixture.js --scenario empty   # no posts
+```
+
+Each command prints a different directory. No output-directory argument is
+accepted. The preparation tests check fixture contents, not Liquid execution.
+
 Once the pinned gems are available, from that temporary directory:
 
 ```sh
@@ -37,8 +49,10 @@ bundle exec jekyll build --baseurl '' --destination _site-root
 
 Do not infer a successful build from fixture preparation. Check both outputs
 for escaped title/description/tag markup, correct `/synthetic-preview/` versus
-root links, stylesheet resolution and unchanged post permalink. Also exercise
-an empty `_posts` directory and a post with no description/tags. No browser
+root links, stylesheet resolution and unchanged post permalink. Repeat both
+builds for all three scenarios. The minimal scenario should omit its post
+description/tag markup while keeping its article/link/date; the empty scenario
+should say “No posts yet.” and contain no post articles. No browser
 preview is authorised by this checklist; honour existing preview restrictions.
 
 Independent review and actual Jekyll builds are required before integrating or

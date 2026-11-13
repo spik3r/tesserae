@@ -28,3 +28,25 @@ test('preparation creates a fresh synthetic fixture with exact current CSS and i
     assert.match(readFileSync(join(path,'_config.yml'),'utf8'), /baseurl: \/synthetic-preview/);
   } finally { rmSync(path,{recursive:true,force:true}); }
 });
+
+
+test('optional fixture scenarios exercise absent post metadata and the empty post list (preparation only)',()=>{
+  const script = fileURLToPath(new URL('../scripts/jekyll-fixture.js',import.meta.url));
+  for (const scenario of ['full', 'minimal', 'empty']) {
+    const path = execFileSync(process.execPath,[script,'--scenario',scenario],{encoding:'utf8'}).trim();
+    try {
+      const post = join(path,'_posts/2020-01-02-synthetic-notes.md');
+      assert.equal(existsSync(post), scenario !== 'empty');
+      if (scenario !== 'empty') {
+        const source = readFileSync(post,'utf8');
+        assert.equal(/^description:/m.test(source),scenario === 'full');
+        assert.equal(/^tags:/m.test(source),scenario === 'full');
+      }
+      assert.ok(!existsSync(join(path,'_site')));
+      assert.equal(readFileSync(join(path,'assets/tesserae.css'),'utf8'),read('html/tesserae.css'));
+    } finally { rmSync(path,{recursive:true,force:true}); }
+  }
+  for (const args of [['--scenario'],['--scenario','unknown'],['--output','/tmp'],['--scenario','empty','extra']]) {
+    assert.throws(()=>execFileSync(process.execPath,[script,...args],{stdio:'pipe'}), /Usage:/);
+  }
+});
