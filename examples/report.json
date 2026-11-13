@@ -91,6 +91,23 @@
       ]
     },
     {
+      "type": "recommendations",
+      "title": "Suggested demonstration actions",
+      "items": [
+        {
+          "title": "Clarify sample instructions",
+          "action": "Replace the invented ambiguous instruction with a labelled example.",
+          "rationale": "Distinguish demonstration content from operational evidence.",
+          "owner": "Fictional documentation team",
+          "status": "Proposed, not approved"
+        },
+        {
+          "title": "Review the fictional glossary",
+          "action": "Check example definitions before reusing this template."
+        }
+      ]
+    },
+    {
       "type": "section",
       "title": "02 / Method and limits",
       "paragraphs": [
