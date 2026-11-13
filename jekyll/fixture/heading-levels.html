@@ -1,0 +1,22 @@
+---
+layout: default
+title: 'Fictional heading composition'
+---
+<h1>Fictional heading composition</h1>
+{% assign example_post = site.posts | first %}
+{% if example_post %}
+<section aria-label="Direct section">
+{% include tesserae/post-summary.html post=example_post %}
+</section>
+<section aria-labelledby="nested-heading">
+<h2 id="nested-heading">Nested examples</h2>
+{% include tesserae/post-summary.html post=example_post heading_level=3 %}
+{% include tesserae/post-summary.html post=example_post heading_level="3" %}
+</section>
+<section aria-label="Safe fallback examples">
+{% include tesserae/post-summary.html post=example_post heading_level=6 %}
+{% include tesserae/post-summary.html post=example_post heading_level='3 onclick="example"' %}
+</section>
+{% else %}
+<p>No posts yet.</p>
+{% endif %}

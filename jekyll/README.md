@@ -98,3 +98,31 @@ The verifier has also passed against six fresh real Jekyll 3.10.0 / Liquid
 /synthetic-preview. These builds used the existing isolated local bundle.
 This validates generated output contracts, not visual, print, keyboard or
 assistive-technology behaviour.
+
+## Composing post-summary headings
+
+The default summary heading remains `h2` for a list directly under a page's
+`h1`. Set `heading_level=3` (numeric or the string `"3"`) when summaries sit
+beneath an `h2` such as “Posts”:
+
+```liquid
+<h2>Posts</h2>
+{% for post in site.posts %}
+  {% include tesserae/post-summary.html post=post heading_level=3 %}
+{% endfor %}
+```
+
+Only fixed `h2` and `h3` tag names can be emitted. Omitted, unsupported and
+malformed values fall back to `h2`; input is never interpolated as a tag name.
+The caller still owns the surrounding hierarchy. The fictional
+`heading-levels.html` fixture exercises default, numeric/string 3, unsupported
+6 and markup-like input. This is structural composition, not a claim of
+screen-reader verification.
+
+For a Minima-style consumer, retain its document head, SEO/feed hooks,
+language, post routes, date-format choice, author/microformat metadata and
+content handling. The current summary is not a substitute for a full post
+layout or rich excerpts. Tesserae CSS contains document-wide selectors and
+must not simply be layered over an existing theme. First pilot a separate
+synthetic layout with one stylesheet owner; migrate real content only after
+route, plugin and presentation compatibility are separately verified.
