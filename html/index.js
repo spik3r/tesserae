@@ -42,6 +42,7 @@ function progress(c) {
   return `<section class="ts-card"><h2>${heading(c.title)}</h2><label>${heading(c.label)}<progress max="${c.max}" value="${c.value}">${c.value} / ${c.max}</progress></label><p>${c.value} / ${c.max}</p></section>`;
 }
 function table(c) {
+  if (c.description !== undefined) text(c.description);
   const columns = list(c.columns, 8);
   if (!columns.length) throw new TypeError('Table needs columns');
   const rows = list(c.rows, 200);
@@ -62,7 +63,7 @@ function table(c) {
       ? `<th scope="row">${heading(cell)}</th>`
       : `<td>${text(cell)}</td>`).join('')}</tr>`;
   }).join('');
-  return `<section class="ts-card ts-wide"><div class="ts-table-scroll" role="region" tabindex="0" aria-label="${heading(c.title)}"><table><caption>${heading(c.title)}</caption><thead><tr>${columns.map(col=>`<th scope="col">${heading(col)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${columns.length}">No records</td></tr>`}</tbody></table></div></section>`;
+  return `<section class="ts-card ts-wide"><div class="ts-table-scroll" role="region" tabindex="0" aria-label="${heading(c.title)}"><table><caption>${heading(c.title)}${c.description ? ` <span class="ts-table-description">${text(c.description)}</span>` : ''}</caption><thead><tr>${columns.map(col=>`<th scope="col">${heading(col)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${columns.length}">No records</td></tr>`}</tbody></table></div></section>`;
 }
 function section(c) {
   return `<section class="ts-card ts-wide"><h2>${heading(c.title)}</h2>${list(c.paragraphs, 16).map(p=>`<p>${text(p)}</p>`).join('')}</section>`;

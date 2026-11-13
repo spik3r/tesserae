@@ -17,3 +17,8 @@ Component classes include `ts-card`, `ts-metric`, `ts-status`, `ts-callout` and 
 ## Table row headers
 
 For tables whose first column identifies each row, set `rowHeaders: true` on the table model. The renderer uses `<th scope="row">` for that first cell while preserving `<th scope="col">` column labels and ordinary `<td>` data cells. Row labels must be non-empty plain text; no labels or identifiers are inferred. The default remains ordinary data cells. The fictional report demonstrates this option. For hand-written HTML, use these same native elements and scopes. Structural tests cover the markup; screen-reader and visual/print QA remain unverified.
+
+
+## Table context
+
+Set a table's optional `description` to plain text explaining units, abbreviations or missing-value conventions. It appears on a separate line inside the native `<caption>`, keeping the explanation attached to the table without generated IDs or extra focus stops. The scroll region keeps the short table title as its accessible label. Omitted, undefined or empty descriptions retain the original title-only caption; other non-string values are rejected, and the usual text/output bounds apply. This supplies context, not automatic interpretation of cells or an assistive-technology certification.

@@ -19,6 +19,7 @@
     {
       "type": "table",
       "title": "Synthetic evidence",
+      "description": "Fictional comparison only. Observations are illustrative, not operational evidence.",
       "rowHeaders": true,
       "columns": [
         "Record",

@@ -64,3 +64,16 @@ test('row header labels stay plain text and the option is strictly boolean',()=>
  assert.doesNotThrow(()=>renderPage(page([{...table,rows:[['','1']]}])));
  assert.match(renderPage(page([{...table,rowHeaders:true,columns:['Item'],rows:[['Sample']]}])),/<tbody><tr><th scope="row">Sample<\/th><\/tr><\/tbody>/);
 });
+
+
+test('table descriptions remain in the native caption without changing the region label',()=>{
+ const table={type:'table',title:'Synthetic inventory',columns:['Item'],rows:[['Sample']],description:'Counts in units. Empty means not reported.'};
+ const html=renderPage(page([table]));
+ assert.match(html,/<caption>Synthetic inventory <span class="ts-table-description">Counts in units. Empty means not reported.<\/span><\/caption>/);
+ assert.match(html,/aria-label="Synthetic inventory"/);
+ for(const description of [undefined,'']) assert.match(renderPage(page([{...table,description}])),/<caption>Synthetic inventory<\/caption>/);
+ assert.match(renderPage(page([{...table,rows:[]}])),/Counts in units/);
+ assert.match(renderPage(page([{...table,description:'<script>"&'}])),/&lt;script&gt;&quot;&amp;<\/span>/);
+ for(const description of [null,false,0,NaN,{},[], 'x'.repeat(8001),'bad\x00']) assert.throws(()=>renderPage(page([{...table,description}])));
+ assert.equal(html,renderPage(page([table])));
+});
