@@ -100,7 +100,28 @@ function section(c) {
 function callout(c) {
   return `<aside class="ts-card ts-callout ts-wide"><h2>${heading(c.title)}</h2><p>${text(c.text)}</p></aside>`;
 }
-const renderers = {metric,status,progress,table,section,callout,metadata,'grouped-table':groupedTable};
+function recommendations(c) {
+  const items = list(c.items, 32);
+  let units = 0;
+  const bounded = value => {
+    const escaped = heading(value);
+    units += value.length;
+    if (units > 100000) throw new RangeError('Recommendation text exceeds bounded budget');
+    return escaped;
+  };
+  const title = bounded(c.title);
+  const body = items.map(item => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) throw new TypeError('Expected recommendation item');
+    const title = bounded(item.title);
+    const action = bounded(item.action);
+    const rationale = item.rationale === undefined ? '' : `<p><strong>Rationale:</strong> ${bounded(item.rationale)}</p>`;
+    const details = ['owner', 'status'].filter(key => item[key] !== undefined).map(key =>
+      `<div><dt>${key === 'owner' ? 'Owner' : 'Status'}</dt><dd>${bounded(item[key])}</dd></div>`).join('');
+    return `<li><h3>${title}</h3><p>${action}</p>${rationale}${details ? `<dl class="ts-metadata">${details}</dl>` : ''}</li>`;
+  }).join('');
+  return `<section class="ts-card ts-wide"><h2>${title}</h2>${items.length ? `<ol class="ts-recommendations">${body}</ol>` : '<p>No recommendations supplied</p>'}</section>`;
+}
+const renderers = {metric,status,progress,table,section,callout,metadata,'grouped-table':groupedTable,recommendations};
 /** Render a plain-text presentation model into a complete inert HTML document. */
 export function renderPage(model) {
   if (!model || typeof model !== 'object' || model.version !== 'tesserae/v1') throw new TypeError('Expected tesserae/v1');

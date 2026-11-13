@@ -15,6 +15,10 @@
 /* Definition lists and grouped evidence keep their native reading order. */
 .ts-metadata{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:var(--ts-space);margin:0}.ts-metadata dt{font-weight:700}.ts-metadata dd{margin:.25rem 0 0}.ts-table-group>.ts-card{border:0;border-radius:0;padding:var(--ts-space) 0 0}.ts-table-group>.ts-card+.ts-card{margin-top:var(--ts-space);border-top:1px solid var(--ts-border)}
 @media print{.ts-metadata{grid-template-columns:repeat(2,minmax(0,1fr))}.ts-metadata>div{break-inside:avoid}}
+
+/* Native ordered recommendations remain meaningful without colour or CSS. */
+.ts-recommendations{padding-inline-start:1.75rem;margin:0}.ts-recommendations>li{padding-inline-start:.5rem}.ts-recommendations>li+li{margin-top:var(--ts-space);border-top:1px solid var(--ts-border);padding-top:var(--ts-space)}.ts-recommendations h3{font-size:1rem;margin:0}.ts-recommendations li::marker{font-weight:700;color:var(--ts-accent)}
+@media print{.ts-recommendations h3{break-after:avoid}}
 </style></head><body><main class="ts-page ts-dashboard"><header class="ts-header"><p class="ts-eyebrow">Synthetic demonstration</p><h1>Fictional dashboard</h1><p>Reusable components, synthetic data</p></header><div class="ts-grid"><section class="ts-card ts-metric"><h2>Example items</h2><p class="ts-value">12</p></section>
 <section class="ts-card ts-metric"><h2>Open tasks</h2><p class="ts-value">0</p></section>
 <section class="ts-card ts-metric"><h2>Historical baseline</h2><p class="ts-value">Unknown</p></section>
