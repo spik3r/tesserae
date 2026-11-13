@@ -1,6 +1,8 @@
 {% comment %}Pass a Jekyll post, not an external URL or raw HTML model. Caller owns the h1.{% endcomment %}
+{% assign tesserae_heading_tag = "h2" %}
+{% if include.heading_level == 3 or include.heading_level == "3" %}{% assign tesserae_heading_tag = "h3" %}{% endif %}
 <article class="ts-card">
-  <h2><a href="{{ include.post.url | relative_url | escape }}">{{ include.post.title | escape }}</a></h2>
+  <{{ tesserae_heading_tag }}><a href="{{ include.post.url | relative_url | escape }}">{{ include.post.title | escape }}</a></{{ tesserae_heading_tag }}>
   <p><time datetime="{{ include.post.date | date: '%Y-%m-%d' }}">{{ include.post.date | date: '%B %-d, %Y' }}</time></p>
   {% if include.post.description %}<p>{{ include.post.description | escape }}</p>{% endif %}
   {% if include.post.tags.size > 0 %}<ul aria-label="Tags">{% for tag in include.post.tags %}<li>{{ tag | escape }}</li>{% endfor %}</ul>{% endif %}

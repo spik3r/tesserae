@@ -50,3 +50,15 @@ test('optional fixture scenarios exercise absent post metadata and the empty pos
     assert.throws(()=>execFileSync(process.execPath,[script,...args],{stdio:'pipe'}), /Usage:/);
   }
 });
+
+test('summary heading composition selects fixed h2/h3 tags, never caller markup',()=>{
+  const summary=read('jekyll/_includes/tesserae/post-summary.html');
+  assert.match(summary, /assign tesserae_heading_tag = "h2"/);
+  assert.match(summary, /include.heading_level == 3 or include.heading_level == "3"/);
+  assert.match(summary, /assign tesserae_heading_tag = "h3"/);
+  assert.equal((summary.match(/assign tesserae_heading_tag/g)||[]).length,2);
+  assert.doesNotMatch(summary, /{{\s*include.heading_level/);
+  const source=read('jekyll/fixture/heading-levels.html');
+  for(const option of ['heading_level=3','heading_level="3"','heading_level=6',`heading_level='3 onclick="example"'`]) assert.ok(source.includes(option));
+  assert.match(source, /<h2 id="nested-heading">/);
+});
