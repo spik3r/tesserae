@@ -10,6 +10,6 @@ Exports, filters and loading controls are not present. Future exports must defin
 ## Progressive framework adoption
 
 - **Now:** shared vocabulary/themes, HTML/CSS renderer and hand-written no-JavaScript example, adapter boundaries documented.
-- **Next larger pilot:** a local-only Jekyll header/post-summary proof now uses built CSS and Liquid includes with synthetic fixtures. Actual Jekyll/Liquid builds and manual QA remain unverified; leave existing blog content and URLs untouched until explicitly migrated and verified.
+- **Next larger pilot:** a experimental Jekyll header/post-summary proof now uses built CSS and Liquid includes with synthetic fixtures. Six synthetic Jekyll/Liquid builds pass; full Pages/blog compatibility and manual QA remain unverified; leave existing blog content and URLs untouched until explicitly migrated and verified.
 - **Then:** React and Solid implementations only when a concrete consumer warrants them; reuse token and fixture contracts rather than copy the HTML renderer.
 - Expand to complex interactive applications progressively. Do not claim chart interactions, routing, exports, hydration or framework support from directories alone.

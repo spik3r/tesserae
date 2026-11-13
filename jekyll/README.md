@@ -1,4 +1,4 @@
-# Jekyll adapter: local-only proof
+# Jekyll adapter: experimental proof
 
 Two experimental Liquid includes and a fictional disposable test site. This is
 **not exported or installable**, nor production-ready. React and Solid remain
