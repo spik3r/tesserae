@@ -15,7 +15,7 @@ jekyll/   Planned: Liquid includes + built CSS (not implemented or exported)
 
 Shared layers do not import a renderer. Future adapters consume shared tokens and the same semantic component contract, but own their framework-specific markup/lifecycle. No React, Solid or Ruby dependency is required today.
 
-- **[Shared contract](common/README.md):** metrics, status, progress, narrative sections, callouts and tables.
+- **[Shared contract](common/README.md):** metrics, status, progress, narrative sections, callouts, metadata and grouped tables.
 - **[Themes](themes/README.md):** slate/sand skins; independent light/dark/auto modes and compact/comfortable density.
 - **[Framework-less HTML/CSS](html/README.md):** use the built stylesheet directly, or generate inert, self-contained HTML with Node.
 - **[Architecture](docs/architecture.md)** and **[roadmap](docs/plan.md):** integration boundaries and incremental delivery.

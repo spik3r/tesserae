@@ -9,9 +9,11 @@ const metrics = [
  {type:'table',title:'Invented work items',columns:['Record','Description','State'],rows:[['DEMO-A','Review sample wording','Open'],['DEMO-B','Check fictional layout','Complete']]}
 ];
 const report = [
+ {type:'metadata',title:'Report context',entries:[{label:'Prepared by',value:'Example review team'},{label:'Edition',value:'Demonstration 1'},{label:'Audience',value:'Fictional engineering team'}]},
  {type:'section',title:'01 / Summary',paragraphs:['This invented handover demonstrates reusable presentation components. No operational conclusions are intended.']},
  {type:'callout',title:'Recommendation',text:'Use this as an example of layout, not as evidence of any real system.'},
  {type:'table',title:'Synthetic evidence',description:'Fictional comparison only. Observations are illustrative, not operational evidence.',rowHeaders:true,columns:['Record','Observation','Next step'],rows:[['SAMPLE-1','Example instructions are ambiguous','Clarify the invented wording'],['SAMPLE-2','Example glossary is complete','No change needed']]},
+ {type:'grouped-table',title:'Grouped review observations',description:'Each group shares the same column meanings. These are invented records, not findings about a real product.',rowHeaders:true,columns:['Record','Observation','Next step'],groups:[{title:'Example documentation',rows:[['DEMO-A','Synthetic setup instructions need a label','Clarify the example'],['DEMO-B','Sample glossary entry is missing','Write an invented definition']]},{title:'Example packaging',description:'An explicitly reviewed empty demonstration group.',rows:[]}]},
  {type:'section',title:'02 / Method and limits',paragraphs:['All names, records and observations are invented. This renderer does not calculate the truth of a report or run any analysis.']}
 ];
 mkdirSync('examples/generated',{recursive:true});

@@ -7,6 +7,8 @@ Components:
 - status: title, label, tone neutral/positive/warning/negative. Label carries meaning independently of colour.
 - progress: title, label, finite value and positive max; value must lie in [0,max].
 - table: title, 1–8 column labels, 0–200 rows with exactly matching plain-text cells. Optional `rowHeaders: true` makes the first cell of each data row a non-empty row header; omitted/undefined or false keeps ordinary data cells. Other rowHeaders values are rejected. Optional plain-text `description` adds explanatory context inside the native caption; omitted/undefined or empty means no description. Other non-string values are rejected. A focusable scroll region provides access on narrow screens.
+- metadata: title and 0–32 ordered `{label, value}` entries, each non-empty plain text, rendered as native definition-list pairs. Caller supplies explicit absence labels; no facts are inferred. Empty entries render “No metadata”.
+- grouped-table: title, shared 1–8 columns, optional description/rowHeaders, and 0–16 ordered groups. Each group has title, optional description and rows following the ordinary table contract. Each group gets its own native caption/column headers and scroll region. Across all groups, at most 200 rows and 200,000 cell text code units, not those limits per group. Empty groups render “No groups”; an empty group table renders “No records”.
 - section: title and up to 16 plain-text paragraphs.
 - callout: title and text.
 

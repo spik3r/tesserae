@@ -5,6 +5,24 @@
   "kind": "report",
   "components": [
     {
+      "type": "metadata",
+      "title": "Report context",
+      "entries": [
+        {
+          "label": "Prepared by",
+          "value": "Example review team"
+        },
+        {
+          "label": "Edition",
+          "value": "Demonstration 1"
+        },
+        {
+          "label": "Audience",
+          "value": "Fictional engineering team"
+        }
+      ]
+    },
+    {
       "type": "section",
       "title": "01 / Summary",
       "paragraphs": [
@@ -37,6 +55,39 @@
           "Example glossary is complete",
           "No change needed"
         ]
+      ]
+    },
+    {
+      "type": "grouped-table",
+      "title": "Grouped review observations",
+      "description": "Each group shares the same column meanings. These are invented records, not findings about a real product.",
+      "rowHeaders": true,
+      "columns": [
+        "Record",
+        "Observation",
+        "Next step"
+      ],
+      "groups": [
+        {
+          "title": "Example documentation",
+          "rows": [
+            [
+              "DEMO-A",
+              "Synthetic setup instructions need a label",
+              "Clarify the example"
+            ],
+            [
+              "DEMO-B",
+              "Sample glossary entry is missing",
+              "Write an invented definition"
+            ]
+          ]
+        },
+        {
+          "title": "Example packaging",
+          "description": "An explicitly reviewed empty demonstration group.",
+          "rows": []
+        }
       ]
     },
     {
