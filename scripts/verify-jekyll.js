@@ -18,7 +18,7 @@ function page(html, baseurl) {
 /** Verify only the known synthetic fixture output; does not build or modify files. */
 export function verifyJekyll({directory, scenario, baseurl}) {
   assert.ok(['full','minimal','empty'].includes(scenario), 'Expected full, minimal or empty scenario');
-  assert.ok(['','/synthetic-preview'].includes(baseurl), 'Expected root or /synthetic-preview baseurl');
+  assert.ok(['','/synthetic-preview','/blog'].includes(baseurl), 'Expected root, /synthetic-preview or /blog baseurl');
   const read = path => readFileSync(join(directory,path),'utf8');
   const index = read('index.html');
   page(index, baseurl);
@@ -74,7 +74,7 @@ function isEntrypoint() {
 if (isEntrypoint()) {
   const args=process.argv.slice(2);
   assert.ok(args.length === 6 && args[0] === '--directory' && args[2] === '--scenario' && args[4] === '--baseurl',
-    'Usage: node scripts/verify-jekyll.js --directory PATH --scenario full|minimal|empty --baseurl ""|/synthetic-preview');
+    'Usage: node scripts/verify-jekyll.js --directory PATH --scenario full|minimal|empty --baseurl ""|/synthetic-preview|/blog');
   verifyJekyll({directory:args[1],scenario:args[3],baseurl:args[5]});
   console.log('Synthetic Jekyll output contracts passed (not visual/print/AT verification).');
 }

@@ -1,6 +1,9 @@
 source "https://rubygems.org"
 gem "jekyll", "= 3.10.0"
 gem "liquid", "= 4.0.4"
+# Match the Markdown/highlighter versions in the inspected blog lockfile.
+gem "kramdown", "= 2.4.0"
+gem "rouge", "= 3.30.0"
 # Explicit runtime dependencies omitted by older transitive gemspecs.
 # base64/bigdecimal were removed from newer Ruby's default gem set.
 gem "base64", "= 0.3.0"
