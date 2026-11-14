@@ -30,3 +30,6 @@ for (const theme of ['slate', 'sand']) writeFileSync(`examples/generated/rtl-rep
 // Keep the full component/state matrix in the same deterministic build and CI gate.
 const {writeGallery} = await import('./gallery.js');
 writeGallery();
+
+const {writeArticleNavigation} = await import('./article-navigation.js');
+writeArticleNavigation();
