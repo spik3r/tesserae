@@ -58,3 +58,21 @@ test('prose styling does not introduce rich HTML into the JSON presentation mode
   assert.match(html, /&lt;a href=&quot;https:\/\/example.invalid&quot;&gt;sample&lt;\/a&gt;/);
   assert.doesNotMatch(html, /<article class="ts-prose"|<a href=/);
 });
+
+test('simple prose tables override dashboard minimum width and keep native semantics',()=>{
+  // CSS contracts, not a computed browser layout or accessibility tree.
+  assert.match(css, /table\{[^}]*min-width:30rem/);
+  assert.match(prose, /\.ts-prose table\{width:100%;min-width:0;table-layout:fixed\}/);
+  assert.match(css, /th,td\{[^}]*overflow-wrap:anywhere/);
+  const html = read('html/prose-example.html');
+  const table = html.match(/<table>([\s\S]*?)<\/table>/)?.[1];
+  assert.ok(table, 'Expected a native article table');
+  assert.match(table, /<caption>Fictional specimen notes<\/caption>/);
+  assert.equal((table.match(/scope="col"/g) ?? []).length, 2);
+  assert.equal((table.match(/scope="row"/g) ?? []).length, 2);
+  assert.match(table, /fictional_reference_with_no_spaces_for_checking_narrow_article_table_wrapping/);
+  assert.match(table, /<code>demo &lt;tag&gt;<\/code>/);
+  assert.doesNotMatch(table, /tabindex|role=|style=|aria-hidden/);
+  const rules = prose.match(/\.ts-prose (?:table|th|td)\{[^}]*\}/g) ?? [];
+  assert.doesNotMatch(rules.join(''), /display:|overflow:hidden|white-space:nowrap|text-overflow|line-clamp/);
+});
