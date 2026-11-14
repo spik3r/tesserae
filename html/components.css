@@ -36,6 +36,7 @@
 .ts-prose a{color:var(--ts-accent);text-decoration:underline;text-underline-offset:.15em;text-decoration-thickness:.08em}
 .ts-prose a:visited{color:var(--ts-muted)}.ts-prose a:hover{text-decoration-thickness:.15em}
 .ts-prose a:focus-visible{outline:3px solid var(--ts-accent);outline-offset:3px}
+.ts-prose table{width:100%;min-width:0;table-layout:fixed}
 .ts-prose hr{border:0;border-block-start:1px solid var(--ts-border)}
 .ts-prose img{max-inline-size:100%;block-size:auto}
 .ts-prose figure{margin-inline:0}
