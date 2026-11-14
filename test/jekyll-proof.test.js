@@ -24,6 +24,10 @@ test('preparation creates a fresh synthetic fixture with exact current CSS and i
     assert.equal(readFileSync(join(path,'assets/tesserae.css'),'utf8'),read('html/tesserae.css'));
     for (const file of ['header.html','post-summary.html']) assert.equal(readFileSync(join(path,'_includes/tesserae',file),'utf8'),read(`jekyll/_includes/tesserae/${file}`));
     assert.equal(readFileSync(join(path,'_layouts/post.html'),'utf8'),read('jekyll/fixture/_layouts/post.html'));
+    const gemfile = readFileSync(join(path,'Gemfile'),'utf8');
+    for (const [name,version] of [['jekyll','3.10.0'],['liquid','4.0.4'],['kramdown','2.4.0'],['kramdown-parser-gfm','1.1.0'],['rouge','3.30.0']]) {
+      assert.ok(gemfile.includes(`gem "${name}", "= ${version}"`), `${name} matches the inspected rendering subset`);
+    }
     assert.ok(existsSync(join(path,'_posts/2020-01-02-synthetic-notes.md')));
     assert.ok(!existsSync(join(path,'_site')),'preparation must not imply a Jekyll build');
     assert.match(readFileSync(join(path,'_config.yml'),'utf8'), /baseurl: \/synthetic-preview/);

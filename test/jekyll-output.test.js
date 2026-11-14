@@ -25,8 +25,8 @@ function fixture(scenario,baseurl) {
  return {directory,scenario,baseurl};
 }
 function withFixture(scenario,baseurl,fn) { const f=fixture(scenario,baseurl); try {fn(f);} finally {rmSync(f.directory,{recursive:true,force:true});} }
-test('verifier accepts six hand-authored output contracts (not real Jekyll execution)',()=>{
- for(const scenario of ['full','minimal','empty']) for(const baseurl of ['','/synthetic-preview']) withFixture(scenario,baseurl,verifyJekyll);
+test('verifier accepts nine hand-authored output contracts (not real Jekyll execution)',()=>{
+ for(const scenario of ['full','minimal','empty']) for(const baseurl of ['','/synthetic-preview','/blog']) withFixture(scenario,baseurl,verifyJekyll);
 });
 test('verifier catches escaping, link, date, metadata, CSS and stale-output regressions',()=>{
  const corruptions=[
@@ -53,9 +53,23 @@ test('verifier catches escaping, link, date, metadata, CSS and stale-output regr
 });
 test('verifier rejects invalid contract and CLI arguments',()=>{
  assert.throws(()=>verifyJekyll({scenario:'other',baseurl:''}),/scenario/);
- assert.throws(()=>verifyJekyll({scenario:'full',baseurl:'https://external.invalid'}),/baseurl/);
+ for (const baseurl of ['https://external.invalid','/other','/blog/','//blog','/blog" onclick="x',null]) assert.throws(()=>verifyJekyll({scenario:'full',baseurl}),/baseurl/);
  assert.throws(()=>execFileSync(process.execPath,['scripts/verify-jekyll.js','--directory','x'],{stdio:'pipe'}),/Usage:/);
  withFixture('empty','',f=>assert.match(execFileSync(process.execPath,['scripts/verify-jekyll.js','--directory',f.directory,'--scenario','empty','--baseurl',''],{encoding:'utf8'}),/not visual/));
+ withFixture('full','/blog',f=>assert.match(execFileSync(process.execPath,['scripts/verify-jekyll.js','--directory',f.directory,'--scenario','full','--baseurl','/blog'],{encoding:'utf8'}),/not visual/));
+});
+
+test('blog-prefix output rejects missing or doubled prefixes in post and stylesheet URLs',()=>{
+ for (const [file,before,after] of [
+  ['index.html','/blog/notes/','/notes/'],
+  ['index.html','/blog/notes/','/blog/blog/notes/'],
+  ['index.html','/blog/assets/','/assets/'],
+  [`${postPath}index.html`,'/blog/assets/','/assets/']
+ ]) withFixture('full','/blog',f=>{
+  const path=join(f.directory,file);
+  writeFileSync(path,readFileSync(path,'utf8').replace(before,after));
+  assert.throws(()=>verifyJekyll(f));
+ });
 });
 
 test('CLI executes through symlink aliases instead of silently succeeding',()=>{

@@ -4,11 +4,13 @@ Two experimental Liquid includes and a fictional disposable test site. This is
 **not exported or installable**, nor production-ready. React and Solid remain
 unimplemented. No blog content, URLs, configuration or deployment is modified.
 
-The intended target's lockfile pins **Jekyll 3.10.0 / Liquid 4.0.4** (GitHub Pages
-232). The fixture pins those two versions, not the full Pages plugin stack.
-All six synthetic builds have been verified locally with Jekyll 3.10.0,
-Liquid 4.0.4 and Ruby 4.0.5: full/minimal/empty at root and
-`/synthetic-preview`. Parsed output checks verified escaping, stylesheet URL and
+The inspected blog lockfile pins **Jekyll 3.10.0 / Liquid 4.0.4 / Kramdown 2.4.0 /
+GFM parser 1.1.0 / Rouge 3.30.0** (GitHub Pages 232). The fixture pins this
+rendering subset, not the full Pages plugin stack. See the revision-linked
+[blog compatibility gap map](../docs/blog-compatibility.md) before planning integration.
+All nine synthetic builds have been verified locally with these versions and
+Ruby 4.0.5: full/minimal/empty at root, `/synthetic-preview` and `/blog`.
+Output checks verified escaping, stylesheet URL and
 bytes, post permalink/date, absent optional metadata and the no-post message.
 This is not verification of the full GitHub Pages plugin stack or actual blog.
 Structural Node tests remain separate from those real-build checks.
@@ -36,7 +38,7 @@ The disposable fixture's `post` layout inherits `default` and wraps `{{ content 
 
 Jekyll supplies rendered HTML to this layout. The wrapper deliberately does not escape or apply `markdownify` again; it is **not a sanitizer** for arbitrary submissions. Keep the site's existing trust/sanitization policy. The JSON renderer's plain-text-only boundary is unchanged. `.ts-prose` uses the existing tokens and has no JavaScript, Ruby extension or syntax-highlight palette. See [article typography](../html/README.md#authored-article-typography) for the scoped styles and limits.
 
-All six fresh synthetic builds passed with the prose wrapper on Jekyll 3.10.0 / Liquid 4.0.4 / Ruby 4.0.5, using the existing isolated bundle without installing gems. The updated output verifier checked the article boundary, native prose markup, escaped code and fragment target alongside the existing CSS, route and metadata checks. Node tests exercise those contracts using hand-authored output and deliberate corruptions; CI does not run Ruby. This does not verify actual blog content, Pages plugins, coloured code highlighting, browser layout, print, keyboard or assistive technology.
+The nine-build matrix passed with the prose wrapper and the pinned rendering subset above, using an isolated bundle copy with Kramdown 2.4.0 installed. The output verifier checked the article boundary, native prose markup, escaped code and fragment target alongside the existing CSS, route and metadata checks. Node tests exercise those contracts using hand-authored output and deliberate corruptions; CI does not run Ruby. This does not verify actual blog content, Pages plugins, coloured code highlighting, browser layout, print, keyboard or assistive technology.
 
 ## Prepare an isolated fixture
 
@@ -64,17 +66,18 @@ directory (set `BUNDLE_PATH` to the same isolated gem directory used to install)
 ```sh
 bundle exec jekyll build --destination _site
 bundle exec jekyll build --baseurl '' --destination _site-root
+bundle exec jekyll build --baseurl /blog --destination _site-blog
 ```
 
-Do not infer a successful build from fixture preparation. Check both outputs
-for escaped title/description/tag markup, correct `/synthetic-preview/` versus
-root links, stylesheet resolution and unchanged post permalink. Repeat both
+Do not infer a successful build from fixture preparation. Check all three outputs
+for escaped title/description/tag markup, correct `/synthetic-preview/`, `/blog/`
+and root links, stylesheet resolution and unchanged synthetic post permalink. Repeat these
 builds for all three scenarios. The minimal scenario should omit its post
 description/tag markup while keeping its article/link/date; the empty scenario
 should say “No posts yet.” and contain no post articles. No browser
 preview is authorised by this checklist; honour existing preview restrictions.
 
-Independent source review and the six synthetic builds passed. Any later changes
+Independent source review and the synthetic builds passed. Any later changes
 must repeat these checks. Blog integration still needs its own compatibility
 review, including Pages plugins, SEO/feed tags, code highlighting and routes.
 Keyboard, visual, print and assistive-technology QA remain pending.
@@ -87,6 +90,7 @@ destination. For example, from the Tesserae repository:
 ```sh
 node scripts/verify-jekyll.js --directory /path/to/full-fixture/_site --scenario full --baseurl /synthetic-preview
 node scripts/verify-jekyll.js --directory /path/to/full-fixture/_site-root --scenario full --baseurl ''
+node scripts/verify-jekyll.js --directory /path/to/full-fixture/_site-blog --scenario full --baseurl /blog
 ```
 
 Repeat for `minimal` and `empty`, using each scenario's separate build
@@ -100,10 +104,10 @@ This is a deliberately exact contract for the known synthetic fixture, **not**
 a general HTML parser, sanitizer, content validator or visual/accessibility
 audit. It is not suitable for arbitrary blogs. The Node test suite exercises
 the verifier with hand-authored output and corruption cases, not actual Liquid
-execution; passing Node CI does not claim the six real Jekyll builds ran.
-The verifier has also passed against six fresh real Jekyll 3.10.0 / Liquid
-4.0.4 builds on Ruby 4.0.5: full/minimal/empty at root and
-/synthetic-preview. These builds used the existing isolated local bundle.
+execution; passing Node CI does not claim the nine real Jekyll builds ran.
+The verifier has also passed against nine fresh real builds with the pinned
+rendering subset on Ruby 4.0.5: full/minimal/empty at root,
+`/synthetic-preview` and `/blog`. These builds used an isolated local bundle.
 This validates generated output contracts, not visual, print, keyboard or
 assistive-technology behaviour.
 
