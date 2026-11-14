@@ -1,0 +1,133 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, symlinkSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {verifyJekyllMetadata} from '../scripts/verify-jekyll-metadata.js';
+
+const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const prepare = fileURLToPath(new URL('../scripts/jekyll-metadata-fixture.js', import.meta.url));
+const verifier = fileURLToPath(new URL('../scripts/verify-jekyll-metadata.js', import.meta.url));
+const postPath = '2020/01/02/synthetic-notes.html';
+const analytics = '<!-- synthetic analytics hook; deliberately no provider code -->';
+
+// Recorded plugin output at /blog in production; trailing whitespace and the
+// feed build time were normalised. These tests check output, not Ruby execution.
+function withOutput(scenario, baseurl, environment, fn) {
+  const directory = mkdtempSync(join(tmpdir(), 'tesserae-metadata-output-'));
+  try {
+    for (const [source, target] of [['index.html','index.html'], ['post.html',postPath], ['feed.xml','feed.xml']]) {
+      const path = join(directory, target);
+      mkdirSync(join(path, '..'), {recursive:true});
+      let content = read(`test/fixtures/jekyll-metadata/${scenario}/${source}`).replaceAll('/blog', baseurl);
+      if (environment === 'development') content = content.replace(analytics, '');
+      writeFileSync(path, content);
+    }
+    mkdirSync(join(directory, 'assets'));
+    writeFileSync(join(directory, 'assets/tesserae.css'), read('html/tesserae.css'));
+    fn({directory, scenario, baseurl, environment});
+  } finally { rmSync(directory, {recursive:true, force:true}); }
+}
+
+test('metadata fixture preparation isolates sources, pins plugins and omits optional values', () => {
+  for (const scenario of ['full','minimal']) {
+    const directory = execFileSync(process.execPath, [prepare,'--scenario',scenario], {encoding:'utf8'}).trim();
+    try {
+      const get = file => readFileSync(join(directory, file), 'utf8');
+      assert.equal(get('assets/tesserae.css'), read('html/tesserae.css'));
+      assert.equal(get('Gemfile'), `${read('jekyll/fixture/Gemfile')}\ngem "jekyll-seo-tag", "= 2.8.0"\ngem "jekyll-feed", "= 0.17.0"\n`);
+      assert.match(get('_config.yml'), /plugins:\n  - jekyll-seo-tag\n  - jekyll-feed/);
+      assert.doesNotMatch(get('_config.yml'), /^(theme|permalink|author):/m);
+      assert.equal(/^lang: en-AU$/m.test(get('_config.yml')), scenario === 'full');
+      assert.equal(/^google_analytics:/m.test(get('_config.yml')), scenario === 'full');
+      assert.equal(/^  date_format:/m.test(get('_config.yml')), scenario === 'full');
+      const post = get('_posts/2020-01-02-synthetic-notes.md');
+      assert.equal(/^author:/m.test(post), scenario === 'full');
+      assert.equal(/^lang: en-GB$/m.test(post), scenario === 'full');
+      assert.ok(!existsSync(join(directory, '_site')));
+      for (const file of ['_layouts/default.html','_layouts/post.html','_includes/head.html']) {
+        assert.equal(get(file), read(`jekyll/metadata-fixture/${file}`));
+      }
+    } finally { rmSync(directory, {recursive:true, force:true}); }
+  }
+  for (const args of [['--scenario','empty'],['--output','/tmp'],['--scenario'],['extra']]) {
+    assert.throws(() => execFileSync(process.execPath, [prepare,...args], {stdio:'pipe'}), /Usage:/);
+  }
+});
+
+test('metadata verifier accepts eight recorded-output combinations (no Ruby execution)', () => {
+  for (const scenario of ['full','minimal']) for (const baseurl of ['','/blog']) for (const environment of ['development','production']) {
+    withOutput(scenario, baseurl, environment, verifyJekyllMetadata);
+  }
+});
+
+test('metadata verifier rejects route, SEO, feed, semantic and stylesheet regressions', () => {
+  const corruptions = [
+    ['index.html','href="/blog/2020/','href="/2020/'],
+    ['index.html','<html lang="en-AU">','<html lang="en">'],
+    [postPath,'<html lang="en-GB">','<html lang="en-AU">'],
+    [postPath,'rel="canonical" href="https://example.invalid/blog/','rel="canonical" href="https://example.invalid/blog/blog/'],
+    [postPath,'property="og:url"','property="wrong:url"'],
+    [postPath,'"@type":"BlogPosting"','"@type":"WebSite"'],
+    [postPath,'"datePublished":"2020-01-02','"datePublished":"2021-01-02'],
+    [postPath,'"@id":"https://example.invalid/blog/','"@id":"https://example.invalid/'],
+    [postPath,'application/ld+json','text/javascript'],
+    [postPath,'"@context":','not-json:'],
+    [postPath,'post h-entry','post'],
+    [postPath,'p-name','wrong-name'],
+    [postPath,'dt-published','wrong-date'],
+    [postPath,'2020/01/02\n','January 2, 2020\n'],
+    [postPath,'p-author h-card','p-author'],
+    [postPath,'Fictional Writer &amp; Co','Fictional Writer & Co'],
+    [postPath,'post-content e-content ts-prose','post-content e-content'],
+    [postPath,'<strong>native emphasis</strong>','&lt;strong&gt;native emphasis&lt;/strong&gt;'],
+    [postPath,'class="u-url" href="/blog/','class="u-url" href="/'],
+    [postPath,'href="/blog/assets/','href="/assets/'],
+    [postPath,'</head>','<link rel="stylesheet" href="/assets/minima.css"></head>'],
+    [postPath,'</head>','<script src="https://example.invalid/script.js"></script></head>'],
+    [postPath,analytics,''],
+    [postPath,'synthetic comments hook','missing comments hook'],
+    [postPath,'href="https://example.invalid/blog/feed.xml"','href="https://example.invalid/feed.xml"'],
+    ['feed.xml','href="https://example.invalid/blog/feed.xml"','href="https://example.invalid/feed.xml"'],
+    ['feed.xml','href="https://example.invalid/blog/2020/','href="https://example.invalid/2020/'],
+    ['feed.xml','<published>2020-01-02','<published>2021-01-02'],
+    ['feed.xml','Fictional Writer &amp; Co','Wrong Writer'],
+    ['feed.xml','xml:lang="en-GB"','xml:lang="en-AU"'],
+    ['feed.xml','<strong>native emphasis</strong>','Lost content'],
+    ['assets/tesserae.css',':root',':wrong-root']
+  ];
+  for (const [file, before, after] of corruptions) withOutput('full','/blog','production', options => {
+    const path = join(options.directory, file);
+    const source = readFileSync(path, 'utf8');
+    assert.ok(source.includes(before), `Invalid corruption setup: ${before}`);
+    writeFileSync(path, source.replace(before, after));
+    assert.throws(() => verifyJekyllMetadata(options), `${file}: ${before}`);
+  });
+  withOutput('full','/blog','production', options => {
+    writeFileSync(join(options.directory, 'stale-route.html'), '<p>stale</p>');
+    assert.throws(() => verifyJekyllMetadata(options), /routes\/assets/);
+  });
+  withOutput('minimal','','development', options => {
+    const path = join(options.directory, postPath);
+    writeFileSync(path, readFileSync(path, 'utf8').replace('</head>', `${analytics}</head>`));
+    assert.throws(() => verifyJekyllMetadata(options), /Analytics hook/);
+  });
+});
+
+test('metadata verifier CLI validates options and runs through a symlink', () => {
+  withOutput('minimal','','development', options => {
+    for (const patch of [{scenario:'empty'}, {baseurl:'/blog/'}, {baseurl:'https://example.invalid'}, {environment:'other'}]) {
+      assert.throws(() => verifyJekyllMetadata({...options, ...patch}));
+    }
+    const aliasDir = mkdtempSync(join(tmpdir(), 'tesserae-metadata-cli-'));
+    try {
+      const alias = join(aliasDir, 'verify.js');
+      symlinkSync(verifier, alias);
+      const args = ['--directory',options.directory,'--scenario','minimal','--baseurl','','--environment','development'];
+      assert.match(execFileSync(process.execPath, [alias,...args], {encoding:'utf8'}), /metadata contracts passed/);
+      assert.throws(() => execFileSync(process.execPath, [alias,...args,'extra'], {stdio:'pipe'}), /Usage:/);
+    } finally { rmSync(aliasDir, {recursive:true, force:true}); }
+  });
+});

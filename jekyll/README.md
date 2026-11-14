@@ -15,6 +15,12 @@ bytes, post permalink/date, absent optional metadata and the no-post message.
 This is not verification of the full GitHub Pages plugin stack or actual blog.
 Structural Node tests remain separate from those real-build checks.
 
+A separate [anonymous SEO/feed fixture](../docs/jekyll-metadata-proof.md) now
+checks the two blog-pinned plugins, head/post metadata and default routes with
+Tesserae as the sole stylesheet. Its eight-build matrix covers full/minimal
+metadata at root and `/blog`, in development and production. It does not load
+the full Pages stack or change the original rendering fixture below.
+
 The fixture explicitly pins `base64` 0.3.0 and `bigdecimal` 4.1.3, needed by
 older dependencies on newer Ruby, and `kramdown-parser-gfm` 1.1.0 for Jekyll's
 default Markdown input. Install in an isolated user-local bundle, not global
