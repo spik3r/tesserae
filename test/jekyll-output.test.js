@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {verifyJekyll} from '../scripts/verify-jekyll.js';
 const postPath='notes/2020/01/02/synthetic-notes/';
+const prose = '<h2 id="sample-list">Sample list</h2><ul><li>Fictional item<ol><li>A nested step.</li></ol></li></ul><blockquote><p>Fictional quote.</p></blockquote><a href="#sample-list">Sample link</a><code>demo &lt;tag&gt;</code><pre class="highlight"><code>fictional &lt;seedling&gt; &amp; notes\ndemo/example/with/a/deliberately/long/unbroken/reference/for/checking/wrapping/without/introducing/a/horizontal/scroll/region\n</code></pre><hr />';
 function fixture(scenario,baseurl) {
  const directory=mkdtempSync(join(tmpdir(),'tesserae-output-contract-'));
  const frame=body=>`<html lang="en"><title>${scenario==='full'?'A fictional &lt;seedling&gt; &amp; its notes':'Minimal fictional post'} | Fictional &lt;Garden&gt; &amp; Notes</title><link href="${baseurl}/assets/tesserae.css">${body}</html>`;
@@ -19,7 +20,7 @@ function fixture(scenario,baseurl) {
  writeFileSync(join(directory,'index.html'),index);
  if(scenario!=='empty') {
    mkdirSync(join(directory,postPath),{recursive:true});
-   writeFileSync(join(directory,postPath,'index.html'),frame(scenario==='full'?'No actual blog content or identifiers are reused.':'Synthetic content without optional description or tags.'));
+  writeFileSync(join(directory,postPath,'index.html'),frame(`<article class="ts-prose">${scenario==='full'?'No actual blog content or identifiers are reused.'+prose:'Synthetic content without optional description or tags.'}</article>`));
  }
  return {directory,scenario,baseurl};
 }
@@ -46,6 +47,9 @@ test('verifier catches escaping, link, date, metadata, CSS and stale-output regr
  withFixture('minimal','',f=>{const path=join(f.directory,'index.html');writeFileSync(path,readFileSync(path,'utf8').replace('</article>','<p>Unexpected description</p></article>'));assert.throws(()=>verifyJekyll(f));});
  withFixture('empty','',f=>{mkdirSync(join(f.directory,postPath),{recursive:true});writeFileSync(join(f.directory,postPath,'index.html'),'stale');assert.throws(()=>verifyJekyll(f),/stale/);});
  withFixture('full','',f=>{rmSync(join(f.directory,postPath,'index.html'));assert.throws(()=>verifyJekyll(f));});
+ for (const [before,after] of [['class="ts-prose"','class="other"'], ['<article class="ts-prose">','<article class="ts-prose"></article>'], ['&lt;seedling&gt;','<seedling>'], ['<blockquote>','<div>'], ['<ol>','<ul>'], ['href="#sample-list"','href="#missing"'], ['<pre class="highlight">','<pre>'], ['<hr />','']]) {
+  withFixture('full','',f=>{const path=join(f.directory,postPath,'index.html');writeFileSync(path,readFileSync(path,'utf8').replace(before,after));assert.throws(()=>verifyJekyll(f));});
+ }
 });
 test('verifier rejects invalid contract and CLI arguments',()=>{
  assert.throws(()=>verifyJekyll({scenario:'other',baseurl:''}),/scenario/);

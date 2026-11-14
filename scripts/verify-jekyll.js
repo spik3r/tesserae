@@ -48,7 +48,21 @@ export function verifyJekyll({directory, scenario, baseurl}) {
   const post = read(`${postPath}index.html`);
   page(post,baseurl);
   contains(post, `<title>${title} | Fictional &lt;Garden&gt; &amp; Notes</title>`);
-  contains(post, scenario === 'full' ? 'No actual blog content or identifiers are reused.' : 'Synthetic content without optional description or tags.');
+  const proseArticles = post.match(/<article class="ts-prose">[\s\S]*?<\/article>/g) ?? [];
+  assert.equal(proseArticles.length, 1, 'Expected one prose post article');
+  const prose = proseArticles[0];
+  contains(prose, scenario === 'full' ? 'No actual blog content or identifiers are reused.' : 'Synthetic content without optional description or tags.');
+  if (scenario === 'full') {
+    contains(prose, '<h2 id="sample-list">Sample list</h2>');
+    contains(prose, '<blockquote>');
+    contains(prose, '<ol>');
+    contains(prose, '<li>A nested step.</li>');
+    contains(prose, 'href="#sample-list"');
+    contains(prose, 'demo &lt;tag&gt;</code>');
+    contains(prose, '<pre class="highlight"><code>fictional &lt;seedling&gt; &amp; notes');
+    contains(prose, 'demo/example/with/a/deliberately/long/unbroken/reference/for/checking/wrapping/without/introducing/a/horizontal/scroll/region');
+    contains(prose, '<hr />');
+  }
 }
 
 function isEntrypoint() {

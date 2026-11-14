@@ -19,6 +19,26 @@
 /* Native ordered recommendations remain meaningful without colour or CSS. */
 .ts-recommendations{padding-inline-start:1.75rem;margin:0}.ts-recommendations>li{padding-inline-start:.5rem}.ts-recommendations>li+li{margin-top:var(--ts-space);border-top:1px solid var(--ts-border);padding-top:var(--ts-space)}.ts-recommendations h3{font-size:1rem;margin:0}.ts-recommendations li::marker{font-weight:700;color:var(--ts-accent)}
 @media print{.ts-recommendations h3{break-after:avoid}}
+
+/* Scoped typography for trusted authored HTML, not a rich-text renderer. */
+.ts-prose{max-inline-size:70ch;min-inline-size:0;overflow-wrap:anywhere}
+.ts-prose :where(p,ul,ol,dl,pre,blockquote,hr){margin-block:var(--ts-space)}
+.ts-prose :where(h2,h3,h4,h5,h6){margin-block:calc(var(--ts-space)*1.5) .5em;line-height:1.3}
+.ts-prose h2{font-size:1.5rem}.ts-prose h3{font-size:1.25rem}.ts-prose h4{font-size:1.125rem}.ts-prose :where(h5,h6){font-size:1rem}
+.ts-prose :where(ul,ol){padding-inline-start:1.75em}
+.ts-prose li+li{margin-block-start:.35em}.ts-prose li>:where(ul,ol){margin-block:.5em}
+.ts-prose blockquote{margin-inline:0;padding:.75em 1em;border-inline-start:.25rem solid var(--ts-accent);background:var(--ts-soft)}
+.ts-prose :where(code,pre){font-family:ui-monospace,monospace;font-size:.9em}
+.ts-prose code{padding:.1em .3em;background:var(--ts-soft);border-radius:.2rem}
+.ts-prose pre{padding:var(--ts-space);background:var(--ts-soft);border:1px solid var(--ts-border);border-radius:var(--ts-radius);white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4}
+.ts-prose pre code{padding:0;background:transparent;border-radius:0;font-size:inherit;white-space:inherit}
+.ts-prose a{color:var(--ts-accent);text-decoration:underline;text-underline-offset:.15em;text-decoration-thickness:.08em}
+.ts-prose a:visited{color:var(--ts-muted)}.ts-prose a:hover{text-decoration-thickness:.15em}
+.ts-prose a:focus-visible{outline:3px solid var(--ts-accent);outline-offset:3px}
+.ts-prose hr{border:0;border-block-start:1px solid var(--ts-border)}
+.ts-prose>:first-child,.ts-prose blockquote>:first-child{margin-block-start:0}
+.ts-prose>:last-child,.ts-prose blockquote>:last-child{margin-block-end:0}
+@media print{.ts-prose{max-inline-size:none}.ts-prose :where(h1,h2,h3,h4,h5,h6){break-after:avoid}.ts-prose :where(pre,blockquote){break-inside:auto}.ts-prose a,.ts-prose a:visited{color:inherit}}
 </style></head><body><main class="ts-page ts-report"><header class="ts-header"><p class="ts-eyebrow">Synthetic demonstration</p><h1>Fictional report</h1><p>Reusable components, synthetic data</p></header><div class="ts-grid"><section class="ts-card ts-wide"><h2>Report context</h2><dl class="ts-metadata"><div><dt>Prepared by</dt><dd>Example review team</dd></div><div><dt>Edition</dt><dd>Demonstration 1</dd></div><div><dt>Audience</dt><dd>Fictional engineering team</dd></div></dl></section>
 <section class="ts-card ts-wide"><h2>01 / Summary</h2><p>This invented handover demonstrates reusable presentation components. No operational conclusions are intended.</p></section>
 <aside class="ts-card ts-callout ts-wide"><h2>Recommendation</h2><p>Use this as an example of layout, not as evidence of any real system.</p></aside>

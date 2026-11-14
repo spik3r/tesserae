@@ -8,6 +8,16 @@ Copy `tesserae.css` with your HTML, link it using a relative path, and write sem
 
 Component classes include `ts-card`, `ts-metric`, `ts-status`, `ts-callout` and `ts-table-scroll`; page/layout classes include `ts-page`, `ts-dashboard`, `ts-report` and `ts-grid`. Match semantic headings, captions, headers and labels as well as classes.
 
+## Authored article typography
+
+Wrap trusted, authored HTML in `<article class="ts-prose">…</article>` and load the same `tesserae.css` asset. [prose-example.html](prose-example.html) is a standalone fictional example with no scripts or remote assets. The wrapper styles paragraphs, headings, nested lists, blockquotes, inline code, code blocks, rules and links. It limits the reading measure to 70ch, uses shared colour/spacing tokens, and uses logical sides for list indentation and quote borders. The new rules apply only within `.ts-prose`; the rest of the stylesheet still has the documented global selectors.
+
+Links retain underlines, use the accent token (muted after visiting), and receive an explicit keyboard-focus outline. Preformatted code preserves source whitespace while allowing long lines to wrap; it adds no horizontal scrolling region or focus stop. Print rules allow long quotes/code to split and request headings stay with following content. CSS describes these behaviours, but browser layout, keyboard, print and assistive-technology checks remain unverified.
+
+This class is styling, not a Markdown parser or HTML/URL sanitizer. Authors own safe content, link destinations and heading order. Use it for trusted site content, or sanitize elsewhere before rendering untrusted HTML. Choose language/direction on the document or authored elements, including code where appropriate; no script guesses these values. The JSON renderer still accepts plain-text fields only and does not expose a raw-HTML/prose component. Images, embedded media, rich tables, task controls and syntax-highlight palettes are outside this prose slice. Do not wrap the whole dashboard/component grid in `.ts-prose` or combine it blindly with another theme's typography.
+
+The experimental Jekyll fixture uses a small post layout to wrap Jekyll's rendered content in `.ts-prose` while retaining the existing document shell, title and permalink. It is a synthetic compatibility proof, not a replacement for a production blog layout, SEO/feed hooks or metadata. See [the Jekyll proof](../jekyll/README.md#authored-post-prose).
+
 ## Build-time renderer
 
 `index.js` exports `renderPage` and `componentTypes`. Node 22+ reads the bundled stylesheet and emits one complete, escaped HTML document, without client scripts. See the root README for the input model. Import via the package root or `tesserae/html` when a local package dependency is configured.

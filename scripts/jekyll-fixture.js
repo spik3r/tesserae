@@ -21,7 +21,7 @@ copyFileSync(new URL('../html/tesserae.css', import.meta.url), join(target, 'ass
 const post = join(target, '_posts/2020-01-02-synthetic-notes.md');
 if (scenario === 'empty') unlinkSync(post);
 if (scenario === 'minimal') writeFileSync(post, `---
-layout: default
+layout: post
 title: 'Minimal fictional post'
 ---
 # Minimal fictional post

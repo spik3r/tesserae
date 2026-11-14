@@ -11,5 +11,6 @@ Exports, filters and loading controls are not present. Future exports must defin
 
 - **Now:** shared vocabulary/themes, HTML/CSS renderer and hand-written no-JavaScript example, adapter boundaries documented.
 - **Next larger pilot:** a experimental Jekyll header/post-summary proof now uses built CSS and Liquid includes with synthetic fixtures. Six synthetic Jekyll/Liquid builds pass; full Pages/blog compatibility and manual QA remain unverified; leave existing blog content and URLs untouched until explicitly migrated and verified.
+- **Article styling:** scoped `.ts-prose` rules now cover trusted authored HTML using the same tokens. A synthetic Jekyll post layout and expanded Markdown fixture pass the six root/subpath builds and output contracts. This does not add rich HTML to the JSON model or replace a real blog's content, SEO/feed handling or theme integration review.
 - **Then:** React and Solid implementations only when a concrete consumer warrants them; reuse token and fixture contracts rather than copy the HTML renderer.
 - Expand to complex interactive applications progressively. Do not claim chart interactions, routing, exports, hydration or framework support from directories alone.
