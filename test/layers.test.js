@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { renderPage as rootRender } from 'tesserae';
 import { renderPage } from 'tesserae/html';
-import { themes, modes, densities, layouts } from 'tesserae/common/options';
+import { themes, modes, densities, layouts, directions } from 'tesserae/common/options';
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
 test('shared vocabulary has no renderer or environment dependencies', () => {
-  for (const values of [themes, modes, densities, layouts]) assert.ok(Object.isFrozen(values));
+  for (const values of [themes, modes, densities, layouts, directions]) assert.ok(Object.isFrozen(values));
   assert.doesNotMatch(read('common/options.js'), /\bimport\s|\brequire\(|\bprocess\.|\bdocument\.|\bwindow\./);
   assert.doesNotMatch(read('themes/tokens.css'), /\.ts-card|\.ts-grid|<|https?:|url\(/);
   assert.doesNotMatch(read('html/components.css'), /#[0-9a-f]{3,8}\b/i);
@@ -17,7 +17,7 @@ test('HTML bundle deterministically combines shared tokens and adapter styles', 
   const css = `${read('themes/tokens.css')}\n${read('html/components.css')}`;
   assert.equal(read('html/tesserae.css'), css);
   assert.equal(rootRender, renderPage);
-  for (const name of ['dashboard', 'report']) {
+  for (const name of ['dashboard', 'report', 'rtl-report']) {
     const model = JSON.parse(read(`examples/${name}.json`));
     for (const theme of themes) {
       const html = renderPage({...model, theme});

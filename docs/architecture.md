@@ -2,6 +2,10 @@
 
 A caller supplies `version: tesserae/v1`, title, components and optional subtitle/footer. Theme (`slate`/`sand`), mode (`auto`/`light`/`dark`), density (`comfortable`/`compact`) and kind (`dashboard`/`report`) are independent options.
 
+Optional `lang` defaults to `en` when omitted/undefined. It must be a primitive string of at most 128 UTF-16 code units accepted by `Intl.getCanonicalLocales`; supplied spelling is retained. This Unicode language-tag syntax is a subset of BCP 47: private-use-only and grandfathered tags such as `x-private` and `i-klingon` are rejected. Validation checks syntax, not translation availability or that the supplied text matches the language. Optional `dir` accepts only `ltr` or `rtl`; omitted/undefined emits no `dir` attribute, keeping the existing browser default. Explicit null, empty strings and other types are rejected for both fields. Language does not infer direction. Both are emitted on the native `<html>` element and apply through normal inheritance.
+
+Built-in English absence/empty-state labels, recommendation field labels and default header/footer text receive `lang="en" dir="ltr"` on non-English documents. Supplied text retains the document language. Existing English output markup is unchanged apart from the rebuilt shared stylesheet. There is no translation dictionary, locale-specific number/date formatting, per-field language model, automatic direction detection or array reversal. Logical inline CSS sides support explicit RTL documents, but browser/print/bidirectional-text and assistive-technology QA remain unverified.
+
 Components:
 - metric: title, finite numeric value, optional unit/description; or state missing/unknown/not-applicable with no value.
 - status: title, label, tone neutral/positive/warning/negative. Label carries meaning independently of colour.

@@ -47,6 +47,8 @@ node bin/tesserae.js - < examples/dashboard.json > dashboard.html
 
 The CLI accepts one filepath or `-` for stdin, allows up to 1 MiB of strict UTF-8 JSON, and writes standalone HTML to stdout. Shell redirection creates or truncates the destination; choose a separate path from the input. See [CLI limits and errors](html/README.md#json-command-line-interface).
 
+For non-English documents, set `lang` (for example, `fr` or `ar`) and independently set `dir: 'rtl'` when needed. Defaults remain English with no explicit direction. [Language and direction](html/README.md#document-language-and-direction) describes validation, built-in English labels and current limits. The [fictional Arabic report](examples/rtl-report.json) works with the same CLI.
+
 ## Component gallery
 
 [Open the gallery index](examples/generated/gallery/index.html) for all 12 theme/mode/density combinations using identical fictional data. Every supported component, explicit empty states, metric absence states, long text and escaped markup are included. See [the review checklist](docs/gallery.md) for the manual checks still needed.

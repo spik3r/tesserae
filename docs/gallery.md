@@ -11,6 +11,8 @@ zero/partial/full progress, long words, Unicode and escaped markup. The same
 model is rendered for every shared theme, mode and density option. `auto`
 follows the browser's preferred colour scheme; it is not a third palette.
 
+The separate `examples/rtl-report.json` fixture supplies anonymous fictional Arabic text with `lang: ar` and `dir: rtl`, mixed-script references and native English fallback labels. `npm run build:examples` creates `examples/generated/rtl-report-slate.html` and `examples/generated/rtl-report-sand.html`. Structural tests also render this model across all 12 theme/mode/density combinations; the two committed reports are additional manual-review fixtures, not additions to the English gallery matrix.
+
 ## Automated checks
 
 Tests enforce component and variant coverage, deterministic output, literal
@@ -30,6 +32,7 @@ When browser review is permitted, inspect:
   assistive technology, including empty states and metric absence values.
 - Print preview: repeated table headings, sensible breaks and contrast.
 - Forced colours and enlarged text, without relying on status colour alone.
+- RTL reports: inline-start callout borders, table/column order, captions, list markers, mixed-script references and English fallback announcements. Have an Arabic reader review the synthetic wording separately; fixture generation is not translation verification.
 
 Record browser/device, variant and observed result for each actual check.
 Structural tests and the existence of these fixtures do not certify visual,

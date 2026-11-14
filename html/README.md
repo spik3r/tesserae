@@ -31,6 +31,26 @@ The existing renderer separately limits the complete UTF-8 HTML document to 1 Mi
 
 Exit status is `0` for rendering or help, `2` for invalid arguments, and `1` for input, rendering or output failures (including a broken pipe). Diagnostics go to stderr and omit input content, file paths and exception stacks. A rendering error can mean an invalid model, excessive rendered output, or missing renderer assets. A failed output write may leave partial HTML at the destination; no atomic output guarantee is made. Help writes usage text to stdout instead of HTML.
 
+## Document language and direction
+
+Set document-level `lang` and `dir` in the existing presentation model:
+
+```js
+renderPage({
+  version: 'tesserae/v1', lang: 'ar', dir: 'rtl',
+  title: 'تقرير تجريبي', category: 'مثال خيالي', footer: 'مثال للتوضيح فقط',
+  components: [{type: 'callout', title: 'تنبيه', text: 'هذا مثال خيالي فقط.'}]
+});
+```
+
+`lang` defaults to `en` and accepts a primitive string of at most 128 UTF-16 code units validated by [`Intl.getCanonicalLocales`](https://tc39.es/ecma402/#sec-intl.getcanonicallocales). Spelling is preserved, including case and aliases; syntax acceptance does not verify a translation or the language of the content. This supports Unicode language tags such as `fr`, `ar` and `zh-Hant-TW`, not all BCP 47 forms (for example, private-use-only `x-private` and grandfathered `i-klingon` are rejected). Empty, null, non-string and malformed values are rejected.
+
+`dir` is independently optional: supply `ltr` or `rtl`, or omit it to retain the browser's default. It is not inferred from `lang`; `auto`, null, empty strings and other values are rejected. The renderer writes native [HTML language and direction attributes](https://html.spec.whatwg.org/multipage/dom.html#the-lang-and-xml:lang-attributes), so caller text and table layout inherit those semantics. Column, row, component and recommendation arrays stay in supplied order. Callout borders use `border-inline-start`, and captions/column headers use `text-align: start`; shared theme tokens remain the same. CSS-only consumers can set these same native attributes on their own document.
+
+This is document metadata and direction support, not a translation system. Built-in labels such as “Unknown”, “No records”, “Rationale”, “Owner” and “Status” remain English. On non-English pages their elements carry `lang="en" dir="ltr"`; the default synthetic category/footer do too when not replaced by caller text. Supply category/footer in the intended document language if desired. Caller fields inherit the document language, with no per-field language or direction overrides. Numbers, dates and mixed-direction strings are not reformatted or rewritten. The existing text, component and 1 MiB HTML bounds still apply.
+
+Run `node bin/tesserae.js examples/rtl-report.json > rtl-report.html` for an anonymous fictional Arabic report. The generated [slate](../examples/generated/rtl-report-slate.html) and [sand](../examples/generated/rtl-report-sand.html) fixtures contain mixed-script references, tables, recommendations and English fallback labels. Automated checks verify markup, escaping, order and bounds; visual layout, mixed-direction text, printing, translations and assistive-technology behaviour require separate review. No denied preview has been retried.
+
 ## Table row headers
 
 For tables whose first column identifies each row, set `rowHeaders: true` on the table model. The renderer uses `<th scope="row">` for that first cell while preserving `<th scope="col">` column labels and ordinary `<td>` data cells. Row labels must be non-empty plain text; no labels or identifiers are inferred. The default remains ordinary data cells. The fictional report demonstrates this option. For hand-written HTML, use these same native elements and scopes. Structural tests cover the markup; screen-reader and visual/print QA remain unverified.
