@@ -1,0 +1,20 @@
+{
+  "version": "tesserae/v1",
+  "lang": "ar",
+  "dir": "rtl",
+  "kind": "report",
+  "title": "تقرير تجريبي",
+  "category": "مثال خيالي",
+  "subtitle": "بيانات خيالية لا تصف أي نظام حقيقي",
+  "footer": "مثال للتوضيح فقط",
+  "components": [
+    {"type": "section", "title": "ملاحظات", "paragraphs": ["هذا التقرير مثال خيالي لاختبار عرض النص.", "نص حرفي: <example> & DEMO-01 / 123"]},
+    {"type": "callout", "title": "تنبيه", "text": "لم يتم التحقق من العرض أو الطباعة."},
+    {"type": "metric", "title": "عدد العناصر", "value": 0, "unit": "عنصر"},
+    {"type": "metric", "title": "قيمة غير معروفة", "state": "unknown"},
+    {"type": "metadata", "title": "معلومات المثال", "entries": [{"label": "المصدر", "value": "بيانات خيالية"}]},
+    {"type": "table", "title": "عناصر خيالية", "description": "جميع القيم نصوص للتوضيح فقط.", "rowHeaders": true, "columns": ["العنصر", "الوصف"], "rows": [["مثال أ", "نص قصير"], ["مثال ب", "DEMO-02 / 456"]]},
+    {"type": "grouped-table", "title": "مجموعات خيالية", "columns": ["العنصر", "الوصف"], "groups": [{"title": "مجموعة فارغة", "rows": []}]},
+    {"type": "recommendations", "title": "خطوات مقترحة", "items": [{"title": "مراجعة النص", "action": "مراجعة هذا المثال قبل استخدامه.", "rationale": "هذا مثال خيالي فقط.", "owner": "فريق تجريبي", "status": "مقترح"}]}
+  ]
+}

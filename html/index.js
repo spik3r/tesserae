@@ -1,6 +1,6 @@
 /** Static presentation primitives. Strings are text, never trusted markup. */
 import { readFileSync } from 'node:fs';
-import { themes, modes, densities, layouts } from '../common/options.js';
+import { themes, modes, densities, layouts, directions } from '../common/options.js';
 const css = readFileSync(new URL('./tesserae.css', import.meta.url), 'utf8');
 const MAX_TEXT = 8000;
 function text(value) {
@@ -11,6 +11,13 @@ function choice(value, values) {
   if (!values.includes(value)) throw new TypeError(`Unsupported option: ${value}`);
   return value;
 }
+function language(value) {
+  if (typeof value !== 'string' || value.length > 128) throw new TypeError('Expected bounded language tag');
+  try { Intl.getCanonicalLocales(value); }
+  catch { throw new TypeError('Expected Unicode language tag'); }
+  // Validate syntax without changing the caller's spelling through ICU aliases.
+  return value;
+}
 function list(value, max) {
   if (!Array.isArray(value) || value.length > max) throw new TypeError('Expected bounded list');
   for (let i = 0; i < value.length; i++) {
@@ -19,7 +26,7 @@ function list(value, max) {
   return value;
 }
 function heading(value) { if (typeof value !== 'string' || !value.trim()) throw new TypeError('Heading cannot be empty'); return text(value); }
-function metric(c) {
+function metric(c, english = '') {
   const state = choice(c.state ?? 'value', ['value','missing','unknown','not-applicable']);
   if (c.unit !== undefined) text(c.unit);
   if (c.description !== undefined) text(c.description);
@@ -31,7 +38,7 @@ function metric(c) {
     if (c.value !== undefined) throw new TypeError('Non-value metric cannot carry a value');
     value = {'missing':'Missing','unknown':'Unknown','not-applicable':'Not applicable'}[state];
   }
-  return `<section class="ts-card ts-metric"><h2>${heading(c.title)}</h2><p class="ts-value">${value}${state === 'value' && c.unit ? ` <small>${text(c.unit)}</small>` : ''}</p>${c.description ? `<p>${text(c.description)}</p>` : ''}</section>`;
+  return `<section class="ts-card ts-metric"><h2>${heading(c.title)}</h2><p class="ts-value"${state === 'value' ? '' : english}>${value}${state === 'value' && c.unit ? ` <small>${text(c.unit)}</small>` : ''}</p>${c.description ? `<p>${text(c.description)}</p>` : ''}</section>`;
 }
 function status(c) {
   const tone = choice(c.tone ?? 'neutral', ['neutral','positive','warning','negative']);
@@ -41,7 +48,7 @@ function progress(c) {
   if (!Number.isFinite(c.value) || !Number.isFinite(c.max) || c.max <= 0 || c.value < 0 || c.value > c.max) throw new TypeError('Invalid progress range');
   return `<section class="ts-card"><h2>${heading(c.title)}</h2><label>${heading(c.label)}<progress max="${c.max}" value="${c.value}">${c.value} / ${c.max}</progress></label><p>${c.value} / ${c.max}</p></section>`;
 }
-function table(c) {
+function table(c, english = '') {
   if (c.description !== undefined) text(c.description);
   const columns = list(c.columns, 8);
   if (!columns.length) throw new TypeError('Table needs columns');
@@ -63,16 +70,16 @@ function table(c) {
       ? `<th scope="row">${heading(cell)}</th>`
       : `<td>${text(cell)}</td>`).join('')}</tr>`;
   }).join('');
-  return `<section class="ts-card ts-wide"><div class="ts-table-scroll" role="region" tabindex="0" aria-label="${heading(c.title)}"><table><caption>${heading(c.title)}${c.description ? ` <span class="ts-table-description">${text(c.description)}</span>` : ''}</caption><thead><tr>${columns.map(col=>`<th scope="col">${heading(col)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${columns.length}">No records</td></tr>`}</tbody></table></div></section>`;
+  return `<section class="ts-card ts-wide"><div class="ts-table-scroll" role="region" tabindex="0" aria-label="${heading(c.title)}"><table><caption>${heading(c.title)}${c.description ? ` <span class="ts-table-description">${text(c.description)}</span>` : ''}</caption><thead><tr>${columns.map(col=>`<th scope="col">${heading(col)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${columns.length}"${english}>No records</td></tr>`}</tbody></table></div></section>`;
 }
-function metadata(c) {
+function metadata(c, english = '') {
   const entries = list(c.entries, 32);
   return `<section class="ts-card ts-wide"><h2>${heading(c.title)}</h2><dl class="ts-metadata">${entries.map(entry => {
     if (!entry || typeof entry !== 'object') throw new TypeError('Expected metadata entry');
     return `<div><dt>${heading(entry.label)}</dt><dd>${heading(entry.value)}</dd></div>`;
-  }).join('')}</dl>${entries.length ? '' : '<p>No metadata</p>'}</section>`;
+  }).join('')}</dl>${entries.length ? '' : `<p${english}>No metadata</p>`}</section>`;
 }
-function groupedTable(c) {
+function groupedTable(c, english = '') {
   const groups = list(c.groups, 16);
   // One component has one shared budget, not a multiplied per-group allowance.
   let totalRows = 0, totalText = 0;
@@ -90,9 +97,9 @@ function groupedTable(c) {
         if (totalText > 200000) throw new RangeError('Grouped table text exceeds bounded budget');
       }
     }
-    return table({title: group.title, description: group.description, columns: c.columns, rows, rowHeaders: c.rowHeaders});
+    return table({title: group.title, description: group.description, columns: c.columns, rows, rowHeaders: c.rowHeaders}, english);
   }).join('');
-  return `<section class="ts-card ts-wide ts-table-group"><h2>${heading(c.title)}</h2>${c.description ? `<p>${text(c.description)}</p>` : ''}${rendered || '<p>No groups</p>'}</section>`;
+  return `<section class="ts-card ts-wide ts-table-group"><h2>${heading(c.title)}</h2>${c.description ? `<p>${text(c.description)}</p>` : ''}${rendered || `<p${english}>No groups</p>`}</section>`;
 }
 function section(c) {
   return `<section class="ts-card ts-wide"><h2>${heading(c.title)}</h2>${list(c.paragraphs, 16).map(p=>`<p>${text(p)}</p>`).join('')}</section>`;
@@ -100,7 +107,7 @@ function section(c) {
 function callout(c) {
   return `<aside class="ts-card ts-callout ts-wide"><h2>${heading(c.title)}</h2><p>${text(c.text)}</p></aside>`;
 }
-function recommendations(c) {
+function recommendations(c, english = '') {
   const items = list(c.items, 32);
   let units = 0;
   const bounded = value => {
@@ -114,12 +121,12 @@ function recommendations(c) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) throw new TypeError('Expected recommendation item');
     const title = bounded(item.title);
     const action = bounded(item.action);
-    const rationale = item.rationale === undefined ? '' : `<p><strong>Rationale:</strong> ${bounded(item.rationale)}</p>`;
+    const rationale = item.rationale === undefined ? '' : `<p><strong${english}>Rationale:</strong> ${bounded(item.rationale)}</p>`;
     const details = ['owner', 'status'].filter(key => item[key] !== undefined).map(key =>
-      `<div><dt>${key === 'owner' ? 'Owner' : 'Status'}</dt><dd>${bounded(item[key])}</dd></div>`).join('');
+      `<div><dt${english}>${key === 'owner' ? 'Owner' : 'Status'}</dt><dd>${bounded(item[key])}</dd></div>`).join('');
     return `<li><h3>${title}</h3><p>${action}</p>${rationale}${details ? `<dl class="ts-metadata">${details}</dl>` : ''}</li>`;
   }).join('');
-  return `<section class="ts-card ts-wide"><h2>${title}</h2>${items.length ? `<ol class="ts-recommendations">${body}</ol>` : '<p>No recommendations supplied</p>'}</section>`;
+  return `<section class="ts-card ts-wide"><h2>${title}</h2>${items.length ? `<ol class="ts-recommendations">${body}</ol>` : `<p${english}>No recommendations supplied</p>`}</section>`;
 }
 const renderers = {metric,status,progress,table,section,callout,metadata,'grouped-table':groupedTable,recommendations};
 /** Render a plain-text presentation model into a complete inert HTML document. */
@@ -129,16 +136,20 @@ export function renderPage(model) {
   const mode = choice(model.mode ?? 'auto', modes);
   const density = choice(model.density ?? 'comfortable', densities);
   const kind = choice(model.kind ?? 'dashboard', layouts);
+  const lang = language(model.lang === undefined ? 'en' : model.lang);
+  const dir = model.dir === undefined ? '' : ` dir="${choice(model.dir, directions)}"`;
+  // Built-in labels remain English; caller text inherits the document language.
+  const english = /^en(?:-|$)/i.test(lang) ? '' : ' lang="en" dir="ltr"';
   if (model.subtitle !== undefined) text(model.subtitle);
   let renderedBytes = 0;
   const components = list(model.components, 64).map(c => {
     if (!c || typeof c !== 'object' || !Object.hasOwn(renderers, c.type)) throw new TypeError('Unsupported component');
-    const output = renderers[c.type](c);
+    const output = renderers[c.type](c, english);
     renderedBytes += Buffer.byteLength(output);
     if (renderedBytes > 1024 * 1024) throw new RangeError('Rendered page exceeds 1 MiB');
     return output;
   }).join('\n');
-  const html = `<!doctype html><html lang="en" data-theme="${theme}" data-mode="${mode}" data-density="${density}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${heading(model.title)}</title><style>${css}</style></head><body><main class="ts-page ts-${kind}"><header class="ts-header"><p class="ts-eyebrow">${text(model.category ?? 'Synthetic demonstration')}</p><h1>${heading(model.title)}</h1>${model.subtitle ? `<p>${text(model.subtitle)}</p>` : ''}</header><div class="ts-grid">${components}</div><footer>${text(model.footer ?? 'Synthetic demonstration data. Not operational evidence.')}</footer></main></body></html>\n`;
+  const html = `<!doctype html><html lang="${lang}"${dir} data-theme="${theme}" data-mode="${mode}" data-density="${density}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${heading(model.title)}</title><style>${css}</style></head><body><main class="ts-page ts-${kind}"><header class="ts-header"><p class="ts-eyebrow"${model.category == null ? english : ''}>${text(model.category ?? 'Synthetic demonstration')}</p><h1>${heading(model.title)}</h1>${model.subtitle ? `<p>${text(model.subtitle)}</p>` : ''}</header><div class="ts-grid">${components}</div><footer${model.footer == null ? english : ''}>${text(model.footer ?? 'Synthetic demonstration data. Not operational evidence.')}</footer></main></body></html>\n`;
   if (Buffer.byteLength(html) > 1024 * 1024) throw new RangeError('Rendered page exceeds 1 MiB');
   return html;
 }

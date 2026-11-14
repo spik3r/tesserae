@@ -1,4 +1,4 @@
-import {mkdirSync,writeFileSync} from 'node:fs';
+import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import {renderPage} from '../html/index.js';
 const metrics = [
  {type:'metric',title:'Example items',value:12},
@@ -23,6 +23,9 @@ for (const [name,components,kind] of [['dashboard',metrics,'dashboard'],['report
  writeFileSync(`examples/${name}.json`,JSON.stringify(model,null,2)+'\n');
  for(const theme of ['slate','sand']) writeFileSync(`examples/generated/${name}-${theme}.html`,renderPage({...model,theme}));
 }
+
+const rtlReport = JSON.parse(readFileSync(new URL('../examples/rtl-report.json', import.meta.url), 'utf8'));
+for (const theme of ['slate', 'sand']) writeFileSync(`examples/generated/rtl-report-${theme}.html`, renderPage({...rtlReport, theme}));
 
 // Keep the full component/state matrix in the same deterministic build and CI gate.
 const {writeGallery} = await import('./gallery.js');

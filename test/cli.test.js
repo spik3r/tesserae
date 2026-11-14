@@ -48,7 +48,7 @@ test('CLI renders file and stdin exactly like renderPage without installation', 
   assert.equal(readFileSync(join(cwd, 'model.json'), 'utf8'), input);
   assert.match(expected, /&lt;script&gt;/);
   assert.doesNotMatch(expected, /<script|<link|<img/);
-  for (const name of ['report', 'dashboard']) {
+  for (const name of ['report', 'dashboard', 'rtl-report']) {
     const path = fileURLToPath(new URL(`../examples/${name}.json`, import.meta.url));
     const json = readFileSync(path, 'utf8');
     success(run([path]), renderPage(JSON.parse(json)));
@@ -120,6 +120,8 @@ test('CLI rejects malformed JSON, invalid models and excessive output without le
     ['\ufeff' + input, /not valid JSON/], ['{} {}', /not valid JSON/],
     ['null', /Unable to render model/], ['[]', /Unable to render model/],
     [JSON.stringify({ ...model, theme: 'SENSITIVE' }), /Unable to render model/],
+    [JSON.stringify({ ...model, lang: 'SENSITIVE" onclick="x' }), /Unable to render model/],
+    [JSON.stringify({ ...model, dir: 'SENSITIVE' }), /Unable to render model/],
     [JSON.stringify({ ...model, components: [{ type: 'SENSITIVE' }] }), /Unable to render model/],
     [JSON.stringify(largeModel), /Unable to render model/]
   ];
