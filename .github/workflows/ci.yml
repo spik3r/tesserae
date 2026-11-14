@@ -36,4 +36,4 @@ jobs:
       - name: Rebuild fictional examples
         run: npm run build:examples
       - name: Require clean generated assets
-        run: git diff --exit-code
+        run: npm run check:examples && git diff --exit-code

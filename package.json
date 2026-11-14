@@ -16,9 +16,10 @@
     "./common/options": "./common/options.js"
   },
   "scripts": {
-    "test": "node scripts/styles.js --check && node --test",
+    "test": "node scripts/styles.js --check && node scripts/check-examples.js && node --test",
     "build:styles": "node scripts/styles.js",
-    "build:examples": "node scripts/styles.js && node scripts/examples.js"
+    "build:examples": "node scripts/styles.js && node scripts/examples.js",
+    "check:examples": "node scripts/check-examples.js"
   },
   "engines": {
     "node": ">=22"

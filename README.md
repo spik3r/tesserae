@@ -62,10 +62,11 @@ No dependency installation required:
 ```sh
 npm test                 # verifies committed CSS is current, then tests
 npm run build:styles     # themes + HTML styles -> html/tesserae.css
-npm run build:examples   # styles + fictional examples and 12 gallery variants
+npm run build:examples   # styles + fictional examples, gallery and article matrix
+npm run check:examples   # read-only exact output inventory and byte comparison
 ```
 
-GitHub Actions runs the contract tests and rebuilds examples on Node 22 and 24, then rejects generated-asset drift. The workflow uses read-only repository permissions, pinned actions and no dependency installation. Automated accessibility contracts check native progress labels, explicit metric absence states, and calculated WCAG contrast (at least 4.5:1) for opaque semantic text tokens against the declared page, card and soft surfaces in both skins, dark/auto-dark and print palettes. The contrast test reads source tokens, not browser-computed styles; it does not verify cascade behavior, forced colours, native progress appearance or decorative borders. These checks do not replace screen/print or assistive-technology QA.
+GitHub Actions runs the contract tests and rebuilds examples on Node 22 and 24, then rejects generated-asset drift. The read-only example check runs before tests and again after rebuilding: it rejects missing, stale, unexpected (including ignored) files and symlinks in `examples/generated/`, and checks generated dashboard/report model bytes too. One manifest drives generation and checking; the build does not delete obsolete files. Review and remove obsolete output explicitly when changing the manifest. Git diff remains a separate final guard for other tracked changes. The workflow uses read-only repository permissions, pinned actions and no dependency installation. Automated accessibility contracts check native progress labels, explicit metric absence states, and calculated WCAG contrast (at least 4.5:1) for opaque semantic text tokens against the declared page, card and soft surfaces in both skins, dark/auto-dark and print palettes. The contrast test reads source tokens, not browser-computed styles; it does not verify cascade behavior, forced colours, native progress appearance or decorative borders. These checks do not replace screen/print or assistive-technology QA.
 
 Generated examples in `examples/generated/` are reproducible local previews. Static structural checks pass; **screen/print visual QA has not been completed**. CSS requests table-header repetition and row break avoidance, but pagination remains browser-dependent. No pixel-exact PDF or page numbering guarantee.
 

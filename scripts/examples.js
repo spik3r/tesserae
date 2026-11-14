@@ -1,5 +1,8 @@
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import {renderPage} from '../html/index.js';
+import {pathToFileURL} from 'node:url';
+import {galleryAssets} from './gallery.js';
+import {articleNavigationAssets} from './article-navigation.js';
 const metrics = [
  {type:'metric',title:'Example items',value:12},
  {type:'metric',title:'Open tasks',value:0},
@@ -17,19 +20,26 @@ const report = [
  {type:'recommendations',title:'Suggested demonstration actions',items:[{title:'Clarify sample instructions',action:'Replace the invented ambiguous instruction with a labelled example.',rationale:'Distinguish demonstration content from operational evidence.',owner:'Fictional documentation team',status:'Proposed, not approved'},{title:'Review the fictional glossary',action:'Check example definitions before reusing this template.'}]},
  {type:'section',title:'02 / Method and limits',paragraphs:['All names, records and observations are invented. This renderer does not calculate the truth of a report or run any analysis.']}
 ];
-mkdirSync('examples/generated',{recursive:true});
-for (const [name,components,kind] of [['dashboard',metrics,'dashboard'],['report',report,'report']]) {
- const model={version:'tesserae/v1',title:`Fictional ${name}`,subtitle:'Reusable components, synthetic data',kind,components};
- writeFileSync(`examples/${name}.json`,JSON.stringify(model,null,2)+'\n');
- for(const theme of ['slate','sand']) writeFileSync(`examples/generated/${name}-${theme}.html`,renderPage({...model,theme}));
+/** One manifest drives writing and read-only verification of every example. */
+export function exampleAssets() {
+ const assets = new Map();
+ for (const [name,components,kind] of [['dashboard',metrics,'dashboard'],['report',report,'report']]) {
+  const model={version:'tesserae/v1',title:`Fictional ${name}`,subtitle:'Reusable components, synthetic data',kind,components};
+  assets.set(`examples/${name}.json`,JSON.stringify(model,null,2)+'\n');
+  for(const theme of ['slate','sand']) assets.set(`examples/generated/${name}-${theme}.html`,renderPage({...model,theme}));
+ }
+ const rtlReport = JSON.parse(readFileSync(new URL('../examples/rtl-report.json', import.meta.url), 'utf8'));
+ for (const theme of ['slate', 'sand']) assets.set(`examples/generated/rtl-report-${theme}.html`, renderPage({...rtlReport, theme}));
+ for (const [name,html] of galleryAssets()) assets.set(`examples/generated/gallery/${name}`,html);
+ for (const [name,html] of articleNavigationAssets()) assets.set(`examples/generated/article-navigation/${name}`,html);
+ return assets;
 }
 
-const rtlReport = JSON.parse(readFileSync(new URL('../examples/rtl-report.json', import.meta.url), 'utf8'));
-for (const theme of ['slate', 'sand']) writeFileSync(`examples/generated/rtl-report-${theme}.html`, renderPage({...rtlReport, theme}));
-
-// Keep the full component/state matrix in the same deterministic build and CI gate.
-const {writeGallery} = await import('./gallery.js');
-writeGallery();
-
-const {writeArticleNavigation} = await import('./article-navigation.js');
-writeArticleNavigation();
+export function writeExamples() {
+ for (const [name,content] of exampleAssets()) {
+  const path = new URL(`../${name}`, import.meta.url);
+  mkdirSync(new URL('.',path),{recursive:true});
+  writeFileSync(path,content);
+ }
+}
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) writeExamples();
