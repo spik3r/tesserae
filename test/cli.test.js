@@ -190,3 +190,47 @@ test('CLI reports a broken output pipe without an unhandled stack trace', { time
   child.stdin.end(input);
   failure(await closed, 1, /Output pipe closed/);
 });
+
+test('CLI handles controlled writable callbacks without claiming success after output failure', t => {
+  const cwd = directory(t);
+  const file = join(cwd, 'model.json');
+  writeFileSync(file, input);
+  const help = run(['--help']).stdout;
+  // A child-local preload replaces only stdout with a real Node Writable.
+  // Its _write callback triggers the normal error event; no disk is filled.
+  for (const scenario of [
+    {code:'EPIPE', deferred:false, prefix:0},
+    {code:'ENOSPC', deferred:true, prefix:0},
+    {code:'ENOSPC', deferred:true, prefix:32},
+    {code:null, deferred:true, prefix:0}
+  ]) {
+    const preload = `
+      import {Writable} from 'node:stream';
+      const original = process.stdout;
+      const scenario = ${JSON.stringify(scenario)};
+      const output = new Writable({write(chunk, encoding, done) {
+        const complete = () => {
+          if (!scenario.code) return original.write(chunk, encoding, done);
+          const error = Object.assign(new Error('SENSITIVE injected output failure'), {code:scenario.code});
+          if (scenario.prefix) original.write(chunk.subarray(0,scenario.prefix), () => done(error));
+          else done(error);
+        };
+        if (scenario.deferred) setImmediate(complete);
+        else complete();
+      }});
+      Object.defineProperty(process, 'stdout', {value:output});
+    `;
+    for (const [args, source, output] of [[[file],undefined,expected], [['-'],input,expected], [['--help'],undefined,help]]) {
+      const result = spawnSync(process.execPath, ['--import', `data:text/javascript,${encodeURIComponent(preload)}`, cli, ...args], {
+        input:source, encoding:'utf8', cwd, timeout:10000, maxBuffer:2*limit
+      });
+      if (!scenario.code) success(result,output);
+      else {
+        // Partial output is permitted on write failure, but exit must fail.
+        assert.equal(result.stdout,Buffer.from(output).subarray(0,scenario.prefix).toString('utf8'));
+        failure({...result,stdout:''},1,scenario.code === 'EPIPE' ? /Output pipe closed/ : /Unable to write output/);
+      }
+    }
+  }
+  assert.equal(readFileSync(file,'utf8'),input);
+});
