@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: 'en' | escape }}" data-theme="slate" data-mode="auto" data-density="comfortable">
+  {% include head.html %}
+  <body><div class="ts-page ts-report">
+    <a class="ts-skip-link" href="#main-content">Skip to content</a>
+    <header class="ts-header">
+      {% assign navigation = site.pages | where_exp: 'item', 'item.nav_order' | sort: 'nav_order' %}
+      {% include tesserae/site-nav.html pages=navigation current_url=page.url label="Site navigation" %}
+    </header>
+    <main id="main-content" class="ts-article-main" tabindex="-1">{{ content }}</main>
+    <footer class="ts-site-footer">Anonymous site fixture. No real blog content.</footer>
+  </div></body>
+</html>

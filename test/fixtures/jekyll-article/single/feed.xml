@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.10.0">Jekyll</generator><link href="https://example.invalid/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://example.invalid/blog/" rel="alternate" type="text/html" /><updated>2020-01-04T00:00:00+00:00</updated><id>https://example.invalid/blog/feed.xml</id><title type="html">Fictional Metadata Notes</title><subtitle>Synthetic metadata only.</subtitle><author><name>Fictional Site Editor &amp; Team</name></author><entry><title type="html">Synthetic notes &amp;amp; “quotes”</title><link href="https://example.invalid/blog/2020/01/02/synthetic-notes.html" rel="alternate" type="text/html" title="Synthetic notes &amp;amp; “quotes”" /><published>2020-01-02T03:04:05+00:00</published><updated>2020-01-02T03:04:05+00:00</updated><id>https://example.invalid/blog/2020/01/02/synthetic-notes</id><content type="html" xml:base="https://example.invalid/blog/2020/01/02/synthetic-notes.html"><![CDATA[<h2 id="fictional-section">Fictional section</h2>
+
+<p>Synthetic prose with <strong>native emphasis</strong> and <code class="language-plaintext highlighter-rouge">literal &lt;code&gt;</code>.</p>
+
+<h2 id="code-and-image">Code and image</h2>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>literal &lt;sample&gt; &amp; code
+fictional_reference_with_no_spaces_for_testing_article_content
+</code></pre></div></div>
+
+<figure><img src="/blog/assets/prose-diagram.svg" width="1200" height="600" alt="Three circles joined by a horizontal line." /><figcaption>Fictional diagram.</figcaption></figure>
+
+<h2 id="simple-table">Simple table</h2>
+
+<table>
+<caption>Fictional specimen notes</caption>
+<thead><tr><th scope="col">Specimen</th><th scope="col">Note</th></tr></thead>
+<tbody><tr><th scope="row">Sample A</th><td>fictional_reference_with_no_spaces_for_testing_article_content</td></tr></tbody>
+</table>]]></content><author><name>Fictional Site Editor &amp; Team</name></author><summary type="html"><![CDATA[A fictional summary & nothing personal.]]></summary></entry></feed>

@@ -1,0 +1,9 @@
+<footer class="ts-article-footer">
+<p>Fictional article; not a migrated post.</p>
+{% if include.post.previous or include.post.next %}
+<nav class="ts-article-nav" aria-label="Adjacent articles"><ul>
+{% if include.post.previous %}<li><a rel="prev" href="{{ include.post.previous.url | relative_url | escape }}">Previous article: {{ include.post.previous.title | escape }}</a></li>{% endif %}
+{% if include.post.next %}<li><a rel="next" href="{{ include.post.next.url | relative_url | escape }}">Next article: {{ include.post.next.title | escape }}</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+</footer>
