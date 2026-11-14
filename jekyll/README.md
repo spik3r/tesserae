@@ -30,6 +30,14 @@ gems. No Ruby installation, actual blog or global gem configuration was changed.
   Global typography styles mean this requires deliberate layout integration,
   not dropping the stylesheet into an existing theme blindly.
 
+## Authored post prose
+
+The disposable fixture's `post` layout inherits `default` and wraps `{{ content }}` in a native `<article class="ts-prose">`. The existing document head, escaped title and post permalink remain intact. The full fictional post now exercises Kramdown headings, nested lists, a quote, inline/fenced literal code, a local fragment link and a rule. Minimal posts use the same wrapper; the empty scenario remains a no-post page. The includes and summary contract are unchanged.
+
+Jekyll supplies rendered HTML to this layout. The wrapper deliberately does not escape or apply `markdownify` again; it is **not a sanitizer** for arbitrary submissions. Keep the site's existing trust/sanitization policy. The JSON renderer's plain-text-only boundary is unchanged. `.ts-prose` uses the existing tokens and has no JavaScript, Ruby extension or syntax-highlight palette. See [article typography](../html/README.md#authored-article-typography) for the scoped styles and limits.
+
+All six fresh synthetic builds passed with the prose wrapper on Jekyll 3.10.0 / Liquid 4.0.4 / Ruby 4.0.5, using the existing isolated bundle without installing gems. The updated output verifier checked the article boundary, native prose markup, escaped code and fragment target alongside the existing CSS, route and metadata checks. Node tests exercise those contracts using hand-authored output and deliberate corruptions; CI does not run Ruby. This does not verify actual blog content, Pages plugins, coloured code highlighting, browser layout, print, keyboard or assistive technology.
+
 ## Prepare an isolated fixture
 
 Run `node scripts/jekyll-fixture.js` from the repository. It prints a new

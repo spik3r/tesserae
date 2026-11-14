@@ -24,6 +24,8 @@ Shared layers do not import a renderer. Future adapters consume shared tokens an
 
 Copy `html/tesserae.css` beside your HTML and use the documented `ts-*` classes. See [the hand-written example](html/example.html). This route needs **no Node or client JavaScript**.
 
+For authored articles, wrap native content in `class="ts-prose"`. [The prose example](html/prose-example.html) demonstrates headings, nested lists, quotes, links and literal code using shared tokens. See [the content boundary and integration limits](html/README.md#authored-article-typography).
+
 For deterministic generation at build time (Node 22+):
 
 ```js

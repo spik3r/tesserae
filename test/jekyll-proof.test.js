@@ -23,6 +23,7 @@ test('preparation creates a fresh synthetic fixture with exact current CSS and i
   try {
     assert.equal(readFileSync(join(path,'assets/tesserae.css'),'utf8'),read('html/tesserae.css'));
     for (const file of ['header.html','post-summary.html']) assert.equal(readFileSync(join(path,'_includes/tesserae',file),'utf8'),read(`jekyll/_includes/tesserae/${file}`));
+    assert.equal(readFileSync(join(path,'_layouts/post.html'),'utf8'),read('jekyll/fixture/_layouts/post.html'));
     assert.ok(existsSync(join(path,'_posts/2020-01-02-synthetic-notes.md')));
     assert.ok(!existsSync(join(path,'_site')),'preparation must not imply a Jekyll build');
     assert.match(readFileSync(join(path,'_config.yml'),'utf8'), /baseurl: \/synthetic-preview/);
@@ -39,6 +40,7 @@ test('optional fixture scenarios exercise absent post metadata and the empty pos
       assert.equal(existsSync(post), scenario !== 'empty');
       if (scenario !== 'empty') {
         const source = readFileSync(post,'utf8');
+        assert.match(source, /^layout: post$/m);
         assert.equal(/^description:/m.test(source),scenario === 'full');
         assert.equal(/^tags:/m.test(source),scenario === 'full');
       }
@@ -49,6 +51,17 @@ test('optional fixture scenarios exercise absent post metadata and the empty pos
   for (const args of [['--scenario'],['--scenario','unknown'],['--output','/tmp'],['--scenario','empty','extra']]) {
     assert.throws(()=>execFileSync(process.execPath,[script,...args],{stdio:'pipe'}), /Usage:/);
   }
+});
+
+test('prose post layout wraps trusted Jekyll content without changing the document shell',()=>{
+  const layout = read('jekyll/fixture/_layouts/post.html');
+  assert.match(layout, /^---\nlayout: default\n---/);
+  assert.match(layout, /<article class="ts-prose">{{ content }}<\/article>/);
+  assert.doesNotMatch(layout, /markdownify|escape|<h1|<script/);
+  const post = read('jekyll/fixture/_posts/2020-01-02-synthetic-notes.md');
+  assert.match(post, /^## Sample list$/m);
+  assert.match(post, /^> This quotation is invented/m);
+  assert.match(post, /```text\nfictional <seedling> & notes/);
 });
 
 test('summary heading composition selects fixed h2/h3 tags, never caller markup',()=>{
