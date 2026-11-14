@@ -25,6 +25,7 @@ export function verifyJekyll({directory, scenario, baseurl}) {
   contains(index, '<h1>Synthetic &lt;Notes&gt; &amp; Updates</h1>');
   contains(index, 'Fictional examples only, not migrated blog content.');
   assert.equal(read('assets/tesserae.css'),readFileSync(cssPath,'utf8'), 'Built CSS differs from current Tesserae asset');
+  assert.equal(read('assets/prose-diagram.svg'),readFileSync(new URL('../html/assets/prose-diagram.svg', import.meta.url),'utf8'), 'Built image differs from the synthetic asset');
   const articles = index.match(/<article\b[\s\S]*?<\/article>/g) ?? [];
   assert.equal(articles.length, scenario === 'empty' ? 0 : 1, 'Unexpected post count');
   if (scenario === 'empty') {
@@ -62,6 +63,8 @@ export function verifyJekyll({directory, scenario, baseurl}) {
     contains(prose, '<pre class="highlight"><code>fictional &lt;seedling&gt; &amp; notes');
     contains(prose, 'demo/example/with/a/deliberately/long/unbroken/reference/for/checking/wrapping/without/introducing/a/horizontal/scroll/region');
     contains(prose, '<hr />');
+    contains(prose, `<img src="${baseurl}/assets/prose-diagram.svg" alt="Three circles joined by a horizontal line." width="120" height="60" />`);
+    contains(prose, `<figure>\n  <img src="${baseurl}/assets/prose-diagram.svg" width="1200" height="600" alt="Three circles joined by a horizontal line." />\n  <figcaption>Fictional diagram, not real data.</figcaption>\n</figure>`);
   }
 }
 

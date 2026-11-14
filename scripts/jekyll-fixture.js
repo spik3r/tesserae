@@ -18,6 +18,7 @@ mkdirSync(join(target, '_includes'), {recursive:true});
 cpSync(new URL('../jekyll/_includes/tesserae', import.meta.url), join(target, '_includes/tesserae'), {recursive:true});
 mkdirSync(join(target, 'assets'), {recursive:true});
 copyFileSync(new URL('../html/tesserae.css', import.meta.url), join(target, 'assets/tesserae.css'));
+copyFileSync(new URL('../html/assets/prose-diagram.svg', import.meta.url), join(target, 'assets/prose-diagram.svg'));
 const post = join(target, '_posts/2020-01-02-synthetic-notes.md');
 if (scenario === 'empty') unlinkSync(post);
 if (scenario === 'minimal') writeFileSync(post, `---

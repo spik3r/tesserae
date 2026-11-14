@@ -30,4 +30,13 @@ demo/example/with/a/deliberately/long/unbroken/reference/for/checking/wrapping/w
 
 ---
 
+## Local images
+
+![Three circles joined by a horizontal line.]({{ '/assets/prose-diagram.svg' | relative_url }}){: width="120" height="60" }
+
+<figure>
+  <img src="{{ '/assets/prose-diagram.svg' | relative_url | escape }}" width="1200" height="600" alt="Three circles joined by a horizontal line.">
+  <figcaption>Fictional diagram, not real data.</figcaption>
+</figure>
+
 This fixture does not certify browser or print layout.
