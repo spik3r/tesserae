@@ -1,0 +1,11 @@
+# Anonymous plugin subset; not a replacement for a real blog configuration.
+title: Fictional Metadata Notes
+description: Synthetic metadata only.
+url: https://example.invalid
+baseurl: /blog
+timezone: UTC
+plugins:
+  - jekyll-seo-tag
+  - jekyll-feed
+exclude: [Gemfile, Gemfile.lock]
+# No theme or permalink override: Tesserae owns CSS; Jekyll owns default routes.
