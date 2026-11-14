@@ -123,6 +123,8 @@ test('CLI rejects malformed JSON, invalid models and excessive output without le
     [JSON.stringify({ ...model, lang: 'SENSITIVE" onclick="x' }), /Unable to render model/],
     [JSON.stringify({ ...model, dir: 'SENSITIVE' }), /Unable to render model/],
     [JSON.stringify({ ...model, components: [{ type: 'SENSITIVE' }] }), /Unable to render model/],
+    [JSON.stringify({ ...model, components: [{ type: ['metric'], title: 'SENSITIVE', value: 0 }] }), /Unable to render model/],
+    [JSON.stringify({ ...model, components: [{ type: [['metric']], title: 'SENSITIVE', value: 0 }] }), /Unable to render model/],
     [JSON.stringify(largeModel), /Unable to render model/]
   ];
   for (const [contents, message] of cases) {
