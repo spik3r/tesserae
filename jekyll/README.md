@@ -46,6 +46,15 @@ Jekyll supplies rendered HTML to this layout. The wrapper deliberately does not 
 
 The nine-build matrix passed with the prose wrapper and the pinned rendering subset above, using an isolated bundle copy with Kramdown 2.4.0 installed. The output verifier checked the article boundary, native prose markup, escaped code and fragment target alongside the existing CSS, route and metadata checks. Node tests exercise those contracts using hand-authored output and deliberate corruptions; CI does not run Ruby. This does not verify actual blog content, Pages plugins, coloured code highlighting, browser layout, print, keyboard or assistive technology.
 
+The full fixture also contains a local fictional SVG, once as a small Markdown
+image and once in a native figure with a caption. Both provide dimensions and
+descriptive alt text. Preparation copies the asset from `html/assets`; the
+verifier checks exact bytes, generated attributes and root/subpath image URLs.
+Nine fresh rendering builds passed with these additions, and the separate
+eight-build metadata matrix passed again with the updated shared CSS. No gems
+were installed for this follow-up. These checks verify output and stylesheet
+parity, not browser image decoding, resizing, print or accessibility.
+
 ## Prepare an isolated fixture
 
 Run `node scripts/jekyll-fixture.js` from the repository. It prints a new

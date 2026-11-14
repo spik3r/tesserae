@@ -32,12 +32,25 @@ test('authored example has native prose, escaped code and a local stylesheet and
   const html = read('html/prose-example.html');
   assert.match(html, /<article class="ts-prose">/);
   assert.equal((html.match(/<h1>/g) || []).length, 1);
-  for (const tag of ['h2','h3','p','ul','ol','blockquote','pre','code','hr']) assert.match(html, new RegExp(`<${tag}\\b`));
+  for (const tag of ['h2','h3','p','ul','ol','blockquote','pre','code','hr','figure','figcaption']) assert.match(html, new RegExp(`<${tag}\\b`));
   assert.match(html, /href="\.\/tesserae.css"/);
   assert.match(html, /href="#sample-list"/);
   assert.match(html, /id="sample-list"/);
   assert.match(html, /fictional &lt;seedling&gt; &amp; notes/);
-  assert.doesNotMatch(html, /<script\b|<iframe\b|<img\b|https?:\/\/|tabindex=|contenteditable=/i);
+  assert.doesNotMatch(html, /<script\b|<iframe\b|https?:\/\/|tabindex=|contenteditable=/i);
+  assert.match(html, /src="\.\/assets\/prose-diagram.svg" width="1200" height="600" alt="Three circles joined by a horizontal line\."/);
+  assert.match(html, /src="\.\/assets\/prose-diagram.svg" width="120" height="60"/);
+  const image = read('html/assets/prose-diagram.svg');
+  assert.match(image, /width="1200" height="600" viewBox="0 0 1200 600"/);
+  assert.doesNotMatch(image, /<script\b|<foreignObject\b|\bon\w+=|(?:href|src)=/i);
+});
+
+test('prose images have a size cap without forced upscaling or cropping',()=>{
+  // Declaration checks only; no browser layout or image decoding is claimed.
+  assert.match(prose, /\.ts-prose img\{max-inline-size:100%;block-size:auto\}/);
+  assert.match(prose, /\.ts-prose figure\{margin-inline:0\}/);
+  assert.match(prose, /\.ts-prose figcaption\{[^}]*color:var\(--ts-muted\)/);
+  assert.doesNotMatch(prose, /object-fit:cover|(?:^|[;{])inline-size:100%/);
 });
 
 test('prose styling does not introduce rich HTML into the JSON presentation model',()=>{

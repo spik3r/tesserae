@@ -22,7 +22,7 @@
 
 /* Scoped typography for trusted authored HTML, not a rich-text renderer. */
 .ts-prose{max-inline-size:70ch;min-inline-size:0;overflow-wrap:anywhere}
-.ts-prose :where(p,ul,ol,dl,pre,blockquote,hr){margin-block:var(--ts-space)}
+.ts-prose :where(p,ul,ol,dl,pre,blockquote,figure,hr){margin-block:var(--ts-space)}
 .ts-prose :where(h2,h3,h4,h5,h6){margin-block:calc(var(--ts-space)*1.5) .5em;line-height:1.3}
 .ts-prose h2{font-size:1.5rem}.ts-prose h3{font-size:1.25rem}.ts-prose h4{font-size:1.125rem}.ts-prose :where(h5,h6){font-size:1rem}
 .ts-prose :where(ul,ol){padding-inline-start:1.75em}
@@ -36,6 +36,10 @@
 .ts-prose a:visited{color:var(--ts-muted)}.ts-prose a:hover{text-decoration-thickness:.15em}
 .ts-prose a:focus-visible{outline:3px solid var(--ts-accent);outline-offset:3px}
 .ts-prose hr{border:0;border-block-start:1px solid var(--ts-border)}
+.ts-prose img{max-inline-size:100%;block-size:auto}
+.ts-prose figure{margin-inline:0}
+.ts-prose figure>img{display:block}
+.ts-prose figcaption{margin-block-start:.5em;color:var(--ts-muted);font-size:.875em}
 .ts-prose>:first-child,.ts-prose blockquote>:first-child{margin-block-start:0}
 .ts-prose>:last-child,.ts-prose blockquote>:last-child{margin-block-end:0}
 @media print{.ts-prose{max-inline-size:none}.ts-prose :where(h1,h2,h3,h4,h5,h6){break-after:avoid}.ts-prose :where(pre,blockquote){break-inside:auto}.ts-prose a,.ts-prose a:visited{color:inherit}}

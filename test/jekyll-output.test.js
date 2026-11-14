@@ -17,10 +17,12 @@ function fixture(scenario,baseurl) {
  const index=frame('<h1>Synthetic &lt;Notes&gt; &amp; Updates</h1>Fictional examples only, not migrated blog content.'+(scenario==='empty'?'No posts yet.':article));
  mkdirSync(join(directory,'assets'));
  writeFileSync(join(directory,'assets/tesserae.css'),readFileSync(new URL('../html/tesserae.css',import.meta.url)));
+ writeFileSync(join(directory,'assets/prose-diagram.svg'),readFileSync(new URL('../html/assets/prose-diagram.svg',import.meta.url)));
  writeFileSync(join(directory,'index.html'),index);
  if(scenario!=='empty') {
    mkdirSync(join(directory,postPath),{recursive:true});
-  writeFileSync(join(directory,postPath,'index.html'),frame(`<article class="ts-prose">${scenario==='full'?'No actual blog content or identifiers are reused.'+prose:'Synthetic content without optional description or tags.'}</article>`));
+  const images = `<img src="${baseurl}/assets/prose-diagram.svg" alt="Three circles joined by a horizontal line." width="120" height="60" /><figure>\n  <img src="${baseurl}/assets/prose-diagram.svg" width="1200" height="600" alt="Three circles joined by a horizontal line." />\n  <figcaption>Fictional diagram, not real data.</figcaption>\n</figure>`;
+  writeFileSync(join(directory,postPath,'index.html'),frame(`<article class="ts-prose">${scenario==='full'?'No actual blog content or identifiers are reused.'+prose+images:'Synthetic content without optional description or tags.'}</article>`));
  }
  return {directory,scenario,baseurl};
 }
@@ -80,6 +82,27 @@ test('CLI executes through symlink aliases instead of silently succeeding',()=>{
   assert.match(execFileSync(process.execPath,[alias,'--directory',f.directory,'--scenario','empty','--baseurl',''],{encoding:'utf8'}),/output contracts passed/);
   writeFileSync(join(f.directory,'assets/tesserae.css'),'stale');
   assert.throws(()=>execFileSync(process.execPath,[alias,'--directory',f.directory,'--scenario','empty','--baseurl',''],{stdio:'pipe'}),/CSS differs/);
+ });
+});
+
+test('prose images retain subpath URLs, descriptions, dimensions, captions and asset bytes',()=>{
+ for (const [before,after] of [
+  ['src="/blog/assets/','src="/assets/'],
+  ['src="/blog/assets/','src="/blog/blog/assets/'],
+  ['alt="Three circles joined by a horizontal line."','alt=""'],
+  ['width="120" height="60"','width="120" height="120"'],
+  ['width="1200" height="600"','width="1200"'],
+  ['<figcaption>','<p>']
+ ]) withFixture('full','/blog',f=>{
+  const path=join(f.directory,postPath,'index.html');
+  const source=readFileSync(path,'utf8');
+  assert.ok(source.includes(before));
+  writeFileSync(path,source.replace(before,after));
+  assert.throws(()=>verifyJekyll(f));
+ });
+ withFixture('full','/blog',f=>{
+  writeFileSync(join(f.directory,'assets/prose-diagram.svg'),'stale');
+  assert.throws(()=>verifyJekyll(f),/Built image differs/);
  });
 });
 

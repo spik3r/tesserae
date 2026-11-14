@@ -22,6 +22,7 @@ test('preparation creates a fresh synthetic fixture with exact current CSS and i
   const path = execFileSync(process.execPath,[fileURLToPath(new URL('../scripts/jekyll-fixture.js',import.meta.url))],{encoding:'utf8'}).trim();
   try {
     assert.equal(readFileSync(join(path,'assets/tesserae.css'),'utf8'),read('html/tesserae.css'));
+    assert.equal(readFileSync(join(path,'assets/prose-diagram.svg'),'utf8'),read('html/assets/prose-diagram.svg'));
     for (const file of ['header.html','post-summary.html']) assert.equal(readFileSync(join(path,'_includes/tesserae',file),'utf8'),read(`jekyll/_includes/tesserae/${file}`));
     assert.equal(readFileSync(join(path,'_layouts/post.html'),'utf8'),read('jekyll/fixture/_layouts/post.html'));
     const gemfile = readFileSync(join(path,'Gemfile'),'utf8');
