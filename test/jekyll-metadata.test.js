@@ -11,6 +11,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 const prepare = fileURLToPath(new URL('../scripts/jekyll-metadata-fixture.js', import.meta.url));
 const verifier = fileURLToPath(new URL('../scripts/verify-jekyll-metadata.js', import.meta.url));
 const postPath = '2020/01/02/synthetic-notes.html';
+const permalinkPath = 'archive/fictional-note/index.html';
 const analytics = '<!-- synthetic analytics hook; deliberately no provider code -->';
 
 // Recorded plugin output at /blog in production; trailing whitespace and the
@@ -18,7 +19,8 @@ const analytics = '<!-- synthetic analytics hook; deliberately no provider code 
 function withOutput(scenario, baseurl, environment, fn) {
   const directory = mkdtempSync(join(tmpdir(), 'tesserae-metadata-output-'));
   try {
-    for (const [source, target] of [['index.html','index.html'], ['post.html',postPath], ['feed.xml','feed.xml']]) {
+    const outputPost = scenario === 'permalink' ? permalinkPath : postPath;
+    for (const [source, target] of [['index.html','index.html'], ['post.html',outputPost], ['feed.xml','feed.xml']]) {
       const path = join(directory, target);
       mkdirSync(join(path, '..'), {recursive:true});
       let content = read(`test/fixtures/jekyll-metadata/${scenario}/${source}`).replaceAll('/blog', baseurl);
@@ -32,7 +34,7 @@ function withOutput(scenario, baseurl, environment, fn) {
 }
 
 test('metadata fixture preparation isolates sources, pins plugins and omits optional values', () => {
-  for (const scenario of ['full','minimal','site-author']) {
+  for (const scenario of ['full','minimal','site-author','permalink']) {
     const directory = execFileSync(process.execPath, [prepare,'--scenario',scenario], {encoding:'utf8'}).trim();
     try {
       const get = file => readFileSync(join(directory, file), 'utf8');
@@ -41,12 +43,14 @@ test('metadata fixture preparation isolates sources, pins plugins and omits opti
       assert.match(get('_config.yml'), /plugins:\n  - jekyll-seo-tag\n  - jekyll-feed/);
       assert.doesNotMatch(get('_config.yml'), /^(theme|permalink):/m);
       assert.equal(/^author: 'Fictional Site Editor & Team'$/m.test(get('_config.yml')), scenario !== 'minimal');
-      assert.equal(/^lang: en-AU$/m.test(get('_config.yml')), scenario === 'full');
-      assert.equal(/^google_analytics:/m.test(get('_config.yml')), scenario === 'full');
-      assert.equal(/^  date_format:/m.test(get('_config.yml')), scenario === 'full');
+      const full = ['full','permalink'].includes(scenario);
+      assert.equal(/^lang: en-AU$/m.test(get('_config.yml')), full);
+      assert.equal(/^google_analytics:/m.test(get('_config.yml')), full);
+      assert.equal(/^  date_format:/m.test(get('_config.yml')), full);
       const post = get('_posts/2020-01-02-synthetic-notes.md');
-      assert.equal(/^author:/m.test(post), scenario === 'full');
-      assert.equal(/^lang: en-GB$/m.test(post), scenario === 'full');
+      assert.equal(/^author:/m.test(post), full);
+      assert.equal(/^lang: en-GB$/m.test(post), full);
+      assert.equal(/^permalink: \/archive\/fictional-note\/$/m.test(post), scenario === 'permalink');
       assert.ok(!existsSync(join(directory, '_site')));
       for (const file of ['_layouts/default.html','_layouts/post.html','_includes/head.html']) {
         assert.equal(get(file), read(`jekyll/metadata-fixture/${file}`));
@@ -58,14 +62,14 @@ test('metadata fixture preparation isolates sources, pins plugins and omits opti
   }
 });
 
-test('metadata verifier accepts twelve recorded-output combinations (no Ruby execution)', () => {
-  for (const scenario of ['full','minimal','site-author']) for (const baseurl of ['','/blog']) for (const environment of ['development','production']) {
+test('metadata verifier accepts sixteen recorded-output combinations (no Ruby execution)', () => {
+  for (const scenario of ['full','minimal','site-author','permalink']) for (const baseurl of ['','/blog']) for (const environment of ['development','production']) {
     withOutput(scenario, baseurl, environment, verifyJekyllMetadata);
   }
 });
 
 test('Pages profile adds a pinned plugin group and disables the default theme without building', () => {
-  for (const args of [['--stack','pages'],['--stack','pages','--scenario','site-author'],['--scenario','minimal','--stack','pages']]) {
+  for (const args of [['--stack','pages'],['--stack','pages','--scenario','site-author'],['--scenario','minimal','--stack','pages'],['--scenario','permalink','--stack','pages']]) {
     const directory = execFileSync(process.execPath,[prepare,...args],{encoding:'utf8'}).trim();
     try {
       const get = path => readFileSync(join(directory,path),'utf8');
@@ -113,6 +117,35 @@ test('author checks distinguish site fallback, page precedence and absent names'
     assert.notEqual(changed,source);
     writeFileSync(path,changed);
     assert.throws(() => verifyJekyllMetadata(options));
+  });
+});
+
+test('custom permalinks keep output files, public URLs and Atom IDs distinct', () => {
+  const url = 'https://example.invalid/blog/archive/fictional-note/';
+  const oldUrl = `https://example.invalid/blog/${postPath}`;
+  for (const [file,before,after] of [
+    ['index.html','href="/blog/archive/fictional-note/"',`href="/blog/${postPath}"`],
+    [permalinkPath,`rel="canonical" href="${url}"`,`rel="canonical" href="${oldUrl}"`],
+    [permalinkPath,`property="og:url" content="${url}"`,`property="og:url" content="${url}index.html"`],
+    [permalinkPath,`"url":"${url}"`,`"url":"${oldUrl}"`],
+    [permalinkPath,`"@id":"${url}"`,`"@id":"${oldUrl}"`],
+    [permalinkPath,'class="u-url" href="/blog/archive/','class="u-url" href="/archive/'],
+    ['feed.xml',`href="${url}" rel="alternate"`,`href="${oldUrl}" rel="alternate"`],
+    ['feed.xml',`xml:base="${url}"`,`xml:base="${oldUrl}"`],
+    ['feed.xml','<id>https://example.invalid/blog/archive/synthetic-notes</id>',`<id>${url}</id>`],
+    ['feed.xml','<id>https://example.invalid/blog/archive/synthetic-notes</id>','<id>https://example.invalid/blog/2020/01/02/synthetic-notes</id>']
+  ]) withOutput('permalink','/blog','production', options => {
+    const path = join(options.directory,file);
+    const source = readFileSync(path,'utf8');
+    assert.ok(source.includes(before), `Invalid permalink corruption setup: ${before}`);
+    writeFileSync(path,source.replace(before,after));
+    assert.throws(() => verifyJekyllMetadata(options), `${file}: ${before}`);
+  });
+  withOutput('permalink','/blog','production', options => {
+    const stale = join(options.directory,postPath);
+    mkdirSync(join(stale,'..'),{recursive:true});
+    writeFileSync(stale,readFileSync(join(options.directory,permalinkPath)));
+    assert.throws(() => verifyJekyllMetadata(options), /routes\/assets/);
   });
 });
 

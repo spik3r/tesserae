@@ -17,16 +17,21 @@ Structural Node tests remain separate from those real-build checks.
 
 A separate [anonymous SEO/feed fixture](../docs/jekyll-metadata-proof.md) now
 checks the two blog-pinned plugins, head/post metadata and default routes with
-Tesserae as the sole stylesheet. Its twelve-build matrix covers full/minimal/
-site-author metadata at root and `/blog`, in development and production. It
+Tesserae as the sole stylesheet. Its sixteen-build matrix covers full/minimal/
+site-author/permalink metadata at root and `/blog`, in development and production. It
 checks page-author precedence, configured site-author fallback and absent
 names without inventing attribution. It does not load
 the full Pages stack or change the original rendering fixture below.
 
 An opt-in [Pages 232 profile](../docs/jekyll-pages-proof.md) separately passed
-twelve builds with the default plugins plus SEO/feed, safe mode and no theme
+sixteen builds with the default plugins plus SEO/feed, safe mode and no theme
 on Ruby 3.3.11. Ruby 4.0.5 cannot resolve its CommonMarker dependency. This is
 local plugin activation evidence, not hosted Pages or actual-blog compatibility.
+
+The [custom permalink case](../docs/jekyll-metadata-proof.md#custom-permalink-case)
+checks directory-style output, metadata/feed URLs and the distinct Atom entry
+ID under both bundles. This does not establish redirect or feed-identity
+preservation for any real route change.
 
 The fixture explicitly pins `base64` 0.3.0 and `bigdecimal` 4.1.3, needed by
 older dependencies on newer Ruby, and `kramdown-parser-gfm` 1.1.0 for Jekyll's

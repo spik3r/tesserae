@@ -5,7 +5,7 @@ import {join} from 'node:path';
 const args = process.argv.slice(2);
 const options = {scenario:'full', stack:'subset'};
 const seen = new Set();
-const usage = 'Usage: node scripts/jekyll-metadata-fixture.js [--scenario full|minimal|site-author] [--stack subset|pages]';
+const usage = 'Usage: node scripts/jekyll-metadata-fixture.js [--scenario full|minimal|site-author|permalink] [--stack subset|pages]';
 for (let i = 0; i < args.length; i += 2) {
   const name = args[i].slice(2);
   if (!['--scenario','--stack'].includes(args[i]) || seen.has(name) || args[i + 1] === undefined) throw new TypeError(usage);
@@ -13,7 +13,7 @@ for (let i = 0; i < args.length; i += 2) {
   seen.add(name);
 }
 const {scenario, stack} = options;
-if (!['full','minimal','site-author'].includes(scenario) || !['subset','pages'].includes(stack)) throw new TypeError(usage);
+if (!['full','minimal','site-author','permalink'].includes(scenario) || !['subset','pages'].includes(stack)) throw new TypeError(usage);
 
 // No target argument: preparation must never overwrite a real site.
 const target = mkdtempSync(join(tmpdir(), 'tesserae-metadata-fixture-'));
@@ -32,7 +32,7 @@ if (stack === 'pages') {
 if (scenario !== 'minimal') {
   appendFileSync(join(target, '_config.yml'), "\nauthor: 'Fictional Site Editor & Team'\n");
 }
-if (scenario === 'full') {
+if (['full','permalink'].includes(scenario)) {
   appendFileSync(join(target, '_config.yml'), `
 lang: en-AU
 minima:
@@ -46,5 +46,9 @@ disqus:
 lang: en-GB
 author: 'Fictional Writer & Co'
 `));
+}
+if (scenario === 'permalink') {
+  const post = join(target, '_posts/2020-01-02-synthetic-notes.md');
+  writeFileSync(post, readFileSync(post, 'utf8').replace('layout: post\n', 'layout: post\npermalink: /archive/fictional-note/\n'));
 }
 console.log(target);
