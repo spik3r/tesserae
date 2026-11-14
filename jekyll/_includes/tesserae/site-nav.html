@@ -1,0 +1,7 @@
+{% if include.pages.size > 0 %}
+<nav class="ts-article-nav" aria-label="{{ include.label | escape }}"><ul>
+{% for item in include.pages %}
+<li><a href="{{ item.url | relative_url | escape }}"{% if item.url == include.current_url %} aria-current="page"{% endif %}>{{ item.title | escape }}</a></li>
+{% endfor %}
+</ul></nav>
+{% endif %}

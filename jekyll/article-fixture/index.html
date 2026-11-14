@@ -1,0 +1,11 @@
+---
+layout: default
+title: 'Fictional index'
+nav_order: 1
+---
+<h1>Fictional index</h1>
+{% if site.posts.size > 0 %}
+{% for post in site.posts %}
+<h2><a href="{{ post.url | relative_url | escape }}">{{ post.title | escape }}</a></h2>
+{% endfor %}
+{% else %}<p>No posts yet.</p>{% endif %}
