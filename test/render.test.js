@@ -77,3 +77,32 @@ test('table descriptions remain in the native caption without changing the regio
  for(const description of [null,false,0,NaN,{},[], 'x'.repeat(8001),'bad\x00']) assert.throws(()=>renderPage(page([{...table,description}])));
  assert.equal(html,renderPage(page([table])));
 });
+
+test('component types must be primitive names, never coerced JSON arrays',()=>{
+ const components = [
+  {type:'metric',title:'Count',value:0},
+  {type:'status',title:'State',label:'Example'},
+  {type:'progress',title:'Steps',label:'Complete',value:0,max:1},
+  {type:'table',title:'Rows',columns:['Item'],rows:[]},
+  {type:'section',title:'Notes',paragraphs:[]},
+  {type:'callout',title:'Note',text:'Example'},
+  {type:'metadata',title:'Context',entries:[]},
+  {type:'grouped-table',title:'Groups',columns:['Item'],groups:[]},
+  {type:'recommendations',title:'Actions',items:[]}
+ ];
+ assert.deepEqual(components.map(c=>c.type),componentTypes);
+ for (const component of components) {
+  assert.doesNotThrow(()=>renderPage(page([component])));
+  for (const type of [[component.type],[[component.type]],null,0,false,{}]) {
+   const parsed = JSON.parse(JSON.stringify(page([{...component,type}])));
+   assert.throws(()=>renderPage(parsed), {name:'TypeError',message:'Unsupported component'});
+  }
+ }
+ let nested = 'metric';
+ for (let i=0;i<10000;i++) nested=[nested];
+ assert.throws(()=>renderPage(page([{...components[0],type:nested}])), {name:'TypeError',message:'Unsupported component'});
+ let coerced=false;
+ const type={toString(){coerced=true;return 'metric';}};
+ assert.throws(()=>renderPage(page([{...components[0],type}])), {name:'TypeError',message:'Unsupported component'});
+ assert.equal(coerced,false);
+});

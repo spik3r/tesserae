@@ -143,7 +143,7 @@ export function renderPage(model) {
   if (model.subtitle !== undefined) text(model.subtitle);
   let renderedBytes = 0;
   const components = list(model.components, 64).map(c => {
-    if (!c || typeof c !== 'object' || !Object.hasOwn(renderers, c.type)) throw new TypeError('Unsupported component');
+    if (!c || typeof c !== 'object' || typeof c.type !== 'string' || !Object.hasOwn(renderers, c.type)) throw new TypeError('Unsupported component');
     const output = renderers[c.type](c, english);
     renderedBytes += Buffer.byteLength(output);
     if (renderedBytes > 1024 * 1024) throw new RangeError('Rendered page exceeds 1 MiB');
