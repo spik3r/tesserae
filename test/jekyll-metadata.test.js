@@ -64,6 +64,30 @@ test('metadata verifier accepts twelve recorded-output combinations (no Ruby exe
   }
 });
 
+test('Pages profile adds a pinned plugin group and disables the default theme without building', () => {
+  for (const args of [['--stack','pages'],['--stack','pages','--scenario','site-author'],['--scenario','minimal','--stack','pages']]) {
+    const directory = execFileSync(process.execPath,[prepare,...args],{encoding:'utf8'}).trim();
+    try {
+      const get = path => readFileSync(join(directory,path),'utf8');
+      assert.match(get('Gemfile'), /gem "github-pages", "= 232", group: :jekyll_plugins/);
+      assert.match(get('_config.yml'), /^theme: null$/m);
+      assert.match(get('_config.yml'), /^repository: fictional\/fixture$/m);
+      assert.equal(get('.tesserae-pages-fixture'), 'v1\n');
+      assert.equal(get('assets/tesserae.css'), read('html/tesserae.css'));
+      assert.ok(!existsSync(join(directory,'Gemfile.lock')));
+      assert.ok(!existsSync(join(directory,'_site')));
+    } finally { rmSync(directory,{recursive:true,force:true}); }
+  }
+  for (const args of [['--stack'],['--stack','other'],['--stack','pages','--stack','pages'],['--scenario','full','--scenario','minimal']]) {
+    assert.throws(() => execFileSync(process.execPath,[prepare,...args],{stdio:'pipe'}), /Usage:/);
+  }
+  const directory = execFileSync(process.execPath,[prepare,'--stack','subset'],{encoding:'utf8'}).trim();
+  try {
+    assert.doesNotMatch(readFileSync(join(directory,'Gemfile'),'utf8'), /github-pages/);
+    assert.ok(!existsSync(join(directory,'.tesserae-pages-fixture')));
+  } finally { rmSync(directory,{recursive:true,force:true}); }
+});
+
 test('author checks distinguish site fallback, page precedence and absent names', () => {
   for (const [scenario,file,before,after] of [
     ['full',postPath,'"name":"Fictional Writer & Co"','"name":"Fictional Site Editor & Team"'],
