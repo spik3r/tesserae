@@ -4,8 +4,8 @@ import {join} from 'node:path';
 
 const args = process.argv.slice(2);
 const scenario = args.length === 0 ? 'full' : args.length === 2 && args[0] === '--scenario' ? args[1] : undefined;
-if (!['full', 'minimal'].includes(scenario)) {
-  throw new TypeError('Usage: node scripts/jekyll-metadata-fixture.js [--scenario full|minimal]');
+if (!['full', 'minimal', 'site-author'].includes(scenario)) {
+  throw new TypeError('Usage: node scripts/jekyll-metadata-fixture.js [--scenario full|minimal|site-author]');
 }
 
 // No target argument: preparation must never overwrite a real site.
@@ -16,6 +16,9 @@ copyFileSync(new URL('../html/tesserae.css', import.meta.url), join(target, 'ass
 // Share rendering pins with the original proof; add only the two inspected plugins.
 const gems = readFileSync(new URL('../jekyll/fixture/Gemfile', import.meta.url), 'utf8');
 writeFileSync(join(target, 'Gemfile'), `${gems}\ngem "jekyll-seo-tag", "= 2.8.0"\ngem "jekyll-feed", "= 0.17.0"\n`);
+if (scenario !== 'minimal') {
+  appendFileSync(join(target, '_config.yml'), "\nauthor: 'Fictional Site Editor & Team'\n");
+}
 if (scenario === 'full') {
   appendFileSync(join(target, '_config.yml'), `
 lang: en-AU

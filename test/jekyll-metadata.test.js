@@ -32,14 +32,15 @@ function withOutput(scenario, baseurl, environment, fn) {
 }
 
 test('metadata fixture preparation isolates sources, pins plugins and omits optional values', () => {
-  for (const scenario of ['full','minimal']) {
+  for (const scenario of ['full','minimal','site-author']) {
     const directory = execFileSync(process.execPath, [prepare,'--scenario',scenario], {encoding:'utf8'}).trim();
     try {
       const get = file => readFileSync(join(directory, file), 'utf8');
       assert.equal(get('assets/tesserae.css'), read('html/tesserae.css'));
       assert.equal(get('Gemfile'), `${read('jekyll/fixture/Gemfile')}\ngem "jekyll-seo-tag", "= 2.8.0"\ngem "jekyll-feed", "= 0.17.0"\n`);
       assert.match(get('_config.yml'), /plugins:\n  - jekyll-seo-tag\n  - jekyll-feed/);
-      assert.doesNotMatch(get('_config.yml'), /^(theme|permalink|author):/m);
+      assert.doesNotMatch(get('_config.yml'), /^(theme|permalink):/m);
+      assert.equal(/^author: 'Fictional Site Editor & Team'$/m.test(get('_config.yml')), scenario !== 'minimal');
       assert.equal(/^lang: en-AU$/m.test(get('_config.yml')), scenario === 'full');
       assert.equal(/^google_analytics:/m.test(get('_config.yml')), scenario === 'full');
       assert.equal(/^  date_format:/m.test(get('_config.yml')), scenario === 'full');
@@ -57,10 +58,38 @@ test('metadata fixture preparation isolates sources, pins plugins and omits opti
   }
 });
 
-test('metadata verifier accepts eight recorded-output combinations (no Ruby execution)', () => {
-  for (const scenario of ['full','minimal']) for (const baseurl of ['','/blog']) for (const environment of ['development','production']) {
+test('metadata verifier accepts twelve recorded-output combinations (no Ruby execution)', () => {
+  for (const scenario of ['full','minimal','site-author']) for (const baseurl of ['','/blog']) for (const environment of ['development','production']) {
     withOutput(scenario, baseurl, environment, verifyJekyllMetadata);
   }
+});
+
+test('author checks distinguish site fallback, page precedence and absent names', () => {
+  for (const [scenario,file,before,after] of [
+    ['full',postPath,'"name":"Fictional Writer & Co"','"name":"Fictional Site Editor & Team"'],
+    ['full',postPath,'>Fictional Writer &amp; Co</span>','>Fictional Site Editor &amp; Team</span>'],
+    ['full','feed.xml','<name>Fictional Writer &amp; Co</name>','<name>Fictional Site Editor &amp; Team</name>'],
+    ['site-author',postPath,'"name":"Fictional Site Editor & Team"','"name":"Fictional Writer & Co"'],
+    ['site-author',postPath,'>Fictional Site Editor &amp; Team</span>','></span>'],
+    ['site-author','index.html','content="Fictional Site Editor & Team"','content=""'],
+    ['site-author','feed.xml','<name>Fictional Site Editor &amp; Team</name>','<name></name>'],
+    ['minimal','feed.xml','<name></name>','<name>Invented Author</name>'],
+    ['minimal',postPath,'</header>','<span class="p-author h-card">Invented Author</span></header>']
+  ]) withOutput(scenario,'/blog','production', options => {
+    const path = join(options.directory,file);
+    const source = readFileSync(path,'utf8');
+    assert.ok(source.includes(before), `Invalid author corruption setup: ${before}`);
+    writeFileSync(path,source.replace(before,after));
+    assert.throws(() => verifyJekyllMetadata(options), `${scenario}: ${file}`);
+  });
+  withOutput('site-author','/blog','production', options => {
+    const path = join(options.directory,'feed.xml');
+    const source = readFileSync(path,'utf8');
+    const changed = source.replace(/(<entry\b[\s\S]*?<name>)[^<]*(<\/name>)/, '$1Wrong Entry Author$2');
+    assert.notEqual(changed,source);
+    writeFileSync(path,changed);
+    assert.throws(() => verifyJekyllMetadata(options));
+  });
 });
 
 test('metadata verifier rejects route, SEO, feed, semantic and stylesheet regressions', () => {
