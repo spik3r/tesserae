@@ -7,7 +7,8 @@ const postPath = '2020/01/02/synthetic-notes.html';
 const date = '2020-01-02T03:04:05+00:00';
 const title = 'Synthetic notes &amp; “quotes”';
 const escapedTitle = 'Synthetic notes &amp; &quot;quotes&quot;';
-const author = 'Fictional Writer & Co';
+const pageAuthor = 'Fictional Writer & Co';
+const siteAuthor = 'Fictional Site Editor & Team';
 const description = 'A fictional summary &amp; nothing personal.';
 const analytics = '<!-- synthetic analytics hook; deliberately no provider code -->';
 const comments = '<!-- synthetic comments hook; deliberately no provider code -->';
@@ -20,13 +21,15 @@ function files(directory, prefix = '') {
 
 /** Exact contracts for this anonymous fixture, not a general HTML/XML validator. */
 export function verifyJekyllMetadata({directory, scenario, baseurl, environment}) {
-  assert.ok(['full','minimal'].includes(scenario), 'Expected full or minimal scenario');
+  assert.ok(['full','minimal','site-author'].includes(scenario), 'Expected full, minimal or site-author scenario');
   assert.ok(['','/blog'].includes(baseurl), 'Expected root or /blog baseurl');
   assert.ok(['development','production'].includes(environment), 'Expected development or production environment');
   assert.deepEqual(files(directory).sort(), ['assets/tesserae.css', 'feed.xml', 'index.html', postPath].sort(), 'Unexpected output routes/assets');
   const read = path => readFileSync(join(directory, path), 'utf8');
   assert.equal(read('assets/tesserae.css'), readFileSync(css, 'utf8'), 'CSS differs from current Tesserae asset');
   const full = scenario === 'full';
+  const configuredSiteAuthor = scenario === 'minimal' ? undefined : siteAuthor;
+  const postAuthor = full ? pageAuthor : configuredSiteAuthor;
   const origin = `https://example.invalid${baseurl}`;
   const postUrl = `${origin}/${postPath}`;
   const index = read('index.html');
@@ -68,7 +71,10 @@ export function verifyJekyllMetadata({directory, scenario, baseurl, environment}
       assert.deepEqual(data.mainEntityOfPage, {'@type':'WebPage', '@id':postUrl});
       once(html, `<meta property="article:published_time" content="${date}" />`);
     }
-    assert.deepEqual(data.author, full && isPost ? {'@type':'Person', name:author} : undefined);
+    const expectedAuthor = isPost ? postAuthor : configuredSiteAuthor;
+    assert.deepEqual(data.author, expectedAuthor ? {'@type':'Person', name:expectedAuthor} : undefined);
+    if (expectedAuthor) once(html, `<meta name="author" content="${expectedAuthor}" />`);
+    else assert.doesNotMatch(html, /name="author"/);
   }
 
   once(index, `<h2><a href="${baseurl}/${postPath}">${escapedTitle}</a></h2>`);
@@ -83,9 +89,8 @@ export function verifyJekyllMetadata({directory, scenario, baseurl, environment}
   once(prose[1], 'literal &lt;code&gt;</code>');
   assert.equal(post.includes(comments), full, 'Comments hook gate differs');
   assert.ok(!index.includes(comments), 'Comments hook leaked to index');
-  if (full) {
-    once(post, '<span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">Fictional Writer &amp; Co</span></span>');
-    once(post, `<meta name="author" content="${author}" />`);
+  if (postAuthor) {
+    once(post, `<span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">${postAuthor.replaceAll('&', '&amp;')}</span></span>`);
   } else assert.doesNotMatch(post, /p-author|itemprop="author"|name="author"/);
 
   once(feed, 'xmlns="http://www.w3.org/2005/Atom"');
@@ -98,8 +103,15 @@ export function verifyJekyllMetadata({directory, scenario, baseurl, environment}
   once(feed, `<id>${postUrl.slice(0, -5)}</id>`);
   once(feed, `<content type="html" xml:base="${postUrl}"><![CDATA[${prose[1].trim()}]]></content>`);
   once(feed, '<summary type="html"><![CDATA[A fictional summary & nothing personal.]]></summary>');
+  // Check feed and entry authors separately: a fallback repeats the same name.
+  const feedHeader = feed.slice(0, feed.indexOf('<entry'));
+  const entry = feed.match(/<entry\b[^>]*>([\s\S]*?)<\/entry>/)?.[1];
+  assert.ok(entry, 'Missing feed entry');
+  assert.equal((feedHeader.match(/<author>/g) ?? []).length, configuredSiteAuthor ? 1 : 0);
+  if (configuredSiteAuthor) once(feedHeader, `<author><name>${configuredSiteAuthor.replaceAll('&', '&amp;')}</name></author>`);
   // Feed 0.17.0 emits an empty author name when neither page nor site supplies one.
-  once(feed, `<author><name>${full ? 'Fictional Writer &amp; Co' : ''}</name></author>`);
+  assert.equal((entry.match(/<author>/g) ?? []).length, 1);
+  once(entry, `<author><name>${postAuthor?.replaceAll('&', '&amp;') ?? ''}</name></author>`);
   if (full) { once(feed, 'xml:lang="en-AU"'); once(feed, '<entry xml:lang="en-GB">'); }
   else assert.doesNotMatch(feed, /xml:lang=/);
 }
@@ -112,7 +124,7 @@ function isEntrypoint() {
 if (isEntrypoint()) {
   const args = process.argv.slice(2);
   assert.ok(args.length === 8 && args[0] === '--directory' && args[2] === '--scenario' && args[4] === '--baseurl' && args[6] === '--environment',
-    'Usage: node scripts/verify-jekyll-metadata.js --directory PATH --scenario full|minimal --baseurl ""|/blog --environment development|production');
+    'Usage: node scripts/verify-jekyll-metadata.js --directory PATH --scenario full|minimal|site-author --baseurl ""|/blog --environment development|production');
   verifyJekyllMetadata({directory:args[1], scenario:args[3], baseurl:args[5], environment:args[7]});
   console.log('Synthetic SEO/feed metadata contracts passed (not full Pages or presentation verification).');
 }
