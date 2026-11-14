@@ -7,13 +7,21 @@ export function articleNavigationAssets() {
   const assets = new Map();
   const links = [];
   for (const theme of themes) for (const mode of modes) for (const density of densities) for (const dir of ['ltr', 'rtl']) {
-    const name = `${theme}-${mode}-${density}-${dir}.html`;
+    const stem = `${theme}-${mode}-${density}-${dir}`;
+    const names = [`${stem}-first.html`, `${stem}.html`, `${stem}-last.html`];
     const rtl = dir === 'rtl';
     const words = rtl
       ? ['ar', 'تجاوز التنقل إلى المقال', 'التنقل بين الأمثلة', 'جميع الأمثلة', 'ملاحظات خيالية', 'مراجع وملاحظات إضافية', 'حول هذا المثال', 'مثال خيالي فقط. لا توجد بيانات حقيقية.', 'مراجع', 'حول المثال']
       : ['en', 'Skip to article', 'Example navigation', 'All examples', 'Fictional field notes', 'References and additional reading notes', 'About this anonymous example', 'Fictional demonstration only. No real data.', 'References', 'About this example'];
-    const [lang, skip, label, all, title, references, about, text, refHeading, aboutHeading] = words;
-    assets.set(name, `<!doctype html>
+    const [lang, skip, label, all, middleTitle, references, about, text, refHeading, aboutHeading] = words;
+    const titles = rtl ? ['بداية الملاحظات الخيالية', middleTitle, 'خاتمة الملاحظات الخيالية']
+      : ['Starting the fictional notes', middleTitle, 'Closing the fictional notes'];
+    for (const [position, name] of names.entries()) {
+      const title = titles[position];
+      const adjacent = [];
+      if (position > 0) adjacent.push(`<li><a rel="prev" href="${names[position - 1]}">${rtl ? 'المقال السابق' : 'Previous article'}: ${titles[position - 1]}</a></li>`);
+      if (position < names.length - 1) adjacent.push(`<li><a rel="next" href="${names[position + 1]}">${rtl ? 'المقال التالي' : 'Next article'}: ${titles[position + 1]}</a></li>`);
+      assets.set(name, `<!doctype html>
 <html lang="${lang}" dir="${dir}" data-theme="${theme}" data-mode="${mode}" data-density="${density}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><link rel="stylesheet" href="../../../html/tesserae.css"></head>
 <body><div class="ts-page ts-report">
@@ -26,17 +34,23 @@ export function articleNavigationAssets() {
 <li><a href="#about">${about}</a></li>
 </ul></nav>
 </header>
-<main id="article" class="ts-article-main" tabindex="-1"><article class="ts-prose">
+<main id="article" class="ts-article-main" tabindex="-1"><article><div class="ts-prose">
 <h1>${title}</h1><p>${text}</p>
 <section id="references"><h2>${refHeading}</h2><p>${text}</p></section>
 <section id="about"><h2>${aboutHeading}</h2><p>${text}</p></section>
+</div>
+<footer>
+<p>${rtl ? `الجزء ${position + 1} من 3 في سلسلة خيالية.` : `Part ${position + 1} of 3 in a fictional series.`}</p>
+<nav class="ts-article-nav" aria-label="${rtl ? 'مقالات السلسلة' : 'Articles in this series'}"><ul>${adjacent.join('')}</ul></nav>
+</footer>
 </article></main>
 <footer>${text}</footer>
 </div></body></html>
 `);
-    links.push(`<li><a href="${name}">${theme} / ${mode} / ${density} / ${dir}</a></li>`);
+      if (position === 1) links.push(`<li><a href="${name}">${theme} / ${mode} / ${density} / ${dir}</a></li>`);
+    }
   }
-  assets.set('index.html', `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Article navigation examples</title><link rel="stylesheet" href="../../../html/tesserae.css"></head><body><main class="ts-page ts-report"><h1>Article navigation examples</h1><p>Anonymous English and Arabic authoring fixtures. Auto follows the preferred colour scheme. These are review fixtures, not evidence of browser, keyboard, print or assistive-technology acceptance.</p><ul>${links.join('')}</ul></main></body></html>\n`);
+  assets.set('index.html', `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Article navigation examples</title><link rel="stylesheet" href="../../../html/tesserae.css"></head><body><main class="ts-page ts-report"><h1>Article navigation examples</h1><p>Each English or Arabic variant opens the middle of a three-article fictional series; follow its previous/next links to inspect both boundaries. Auto follows the preferred colour scheme. These are review fixtures, not evidence of browser, keyboard, print or assistive-technology acceptance.</p><ul>${links.join('')}</ul></main></body></html>\n`);
   return assets;
 }
 
