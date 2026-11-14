@@ -3,8 +3,10 @@
 This separate fixture exercises the head/post contracts identified in the
 [blog gap map](blog-compatibility.md). It loads `jekyll-seo-tag` 2.8.0 and
 `jekyll-feed` 0.17.0, matching the inspected Pages 232 lockfile, alongside the
-existing pinned rendering subset. It does **not** load `github-pages`, Minima
-or the rest of the Pages plugins, and is not a real blog migration.
+existing pinned rendering subset. By default it does **not** load `github-pages`,
+Minima or the rest of the Pages plugins. The opt-in [Pages bundle profile](jekyll-pages-proof.md)
+separately checks default plugin activation on Ruby 3.3.11 with the theme disabled.
+Neither profile is a real blog migration.
 
 The local templates retain language fallback, SEO/feed tags, title/date/author,
 post microformats, schema attributes, content and hidden permalink semantics.
@@ -105,8 +107,8 @@ excerpts, theme-specific styles, real analytics/comments and deployment remain
 unverified. No browser, preview, visual, print, keyboard or assistive-technology
 checks were performed. This fixture provides no approval to change the blog.
 
-The next compatibility gate is a separate full Pages/runtime fixture and a
-review of remaining route and layout ownership. The authorless case remains
+The Pages profile now covers local default-plugin activation; hosted runtime
+parity and remaining route/layout ownership still need review. The authorless case remains
 unsuitable as a publishing example; real author policy and unsupported author
 shapes still need review. Retain the real blog's routes and metadata until
 their own checks pass.

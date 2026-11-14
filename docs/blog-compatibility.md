@@ -14,6 +14,10 @@ site-author fallback/page-author precedence. The original
 rendering-subset evidence below remains valid; full Pages/blog compatibility
 is still unverified.
 
+The opt-in [Pages 232 profile](jekyll-pages-proof.md) now passes twelve local
+builds on Ruby 3.3.11 with default plugins plus SEO/feed and the theme disabled.
+This narrows the activation gap; it does not reproduce hosted Pages or the real blog.
+
 ## Inspected ownership and pins
 
 The blog's [Gemfile](https://github.com/spik3r/blog/blob/fd83f4c73f075c83cb72c0989130cd3cc6bb9d95/Gemfile)
@@ -36,8 +40,8 @@ replace those local templates automatically.
 | Area | Blog contract at the inspected revision | Current Tesserae evidence and remaining check |
 | --- | --- | --- |
 | Rendering versions | Jekyll 3.10.0, Liquid 4.0.4, Kramdown 2.4.0, GFM 1.1.0, Rouge 3.30.0 | These five fixture versions now match. Previously Kramdown was unpinned and the tested bundle used 2.5.2. Nine synthetic builds pass with the pinned subset. |
-| Pages/plugins | Pages 232 and its plugin dependency set | The original fixture loads no Pages plugins. The separate metadata fixture loads SEO 2.8.0 and feed 0.17.0 explicitly and verifies their generated metadata/feed. Pages, Minima, other plugins and hosted behaviour remain unverified. |
-| Ruby/transitives | Lock records Bundler 2.6.3, base64 0.2.0 and bigdecimal 3.1.9; inspected files do not pin Ruby | Local proof uses Ruby 4.0.5 / Bundler 4.0.11 and compatibility helpers base64 0.3.0 / bigdecimal 4.1.3. This is not a reproduction of the entire lockfile or deployment runtime. |
+| Pages/plugins | Pages 232 and its plugin dependency set | Default metadata profile checks SEO/feed only. Opt-in Pages profile checks safe mode and loaded sources for ten default plugins plus SEO/feed; twelve builds pass. Individual plugin features, Minima, other permitted plugins and hosted behaviour remain unverified. |
+| Ruby/transitives | Lock records Bundler 2.6.3, base64 0.2.0 and bigdecimal 3.1.9; inspected files do not pin Ruby | Subset proof uses Ruby 4.0.5; Pages 232 fails resolution there because CommonMarker requires Ruby below 4.0. Pages profile passes on existing Ruby 3.3.11 / Bundler 4.0.11 with fresh transitives and the fixture helpers. Neither reproduces the entire blog lockfile or deployment runtime. |
 | Base path | `/blog`; links and stylesheet use `relative_url` | Full/minimal/empty fixtures pass at root, `/synthetic-preview` and `/blog`. Verifier rejects missing/doubled `/blog` prefixes. This tests path composition, not real routes. |
 | Routes | No config-level permalink override; Jekyll 3.10 defaults to the `date` style | Original fixture retains `/notes/:year/:month/:day/:title/`. Metadata fixture verifies the default synthetic `.html` route at root and `/blog`. Actual post/front-matter routes remain uninventoried and unchanged. |
 | Document/head | Local default chooses page/site language; local head invokes `seo` and `feed_meta`, plus conditional production analytics | Metadata fixture verifies page/site/default language, canonical/OG/JSON-LD/feed output and inert analytics inclusion markers in development/production. Actual provider code and full blog head remain unverified. |
@@ -75,6 +79,7 @@ and negative cases; it does not install Ruby or claim to run these real builds.
 
 The separate metadata fixture now covers the two pinned SEO/feed plugins,
 default synthetic routes and head/post contracts under one stylesheet owner.
-Next gates remain the full Pages/runtime stack, feed author policy and the
-unverified real route/layout contracts. Framework ports do not resolve these
-consumer-specific gaps.
+The Pages profile adds local default-plugin activation evidence. Next gates
+remain hosted/runtime parity, remaining plugin features, feed author policy
+and the unverified real route/layout contracts. Framework ports do not resolve
+these consumer-specific gaps.
