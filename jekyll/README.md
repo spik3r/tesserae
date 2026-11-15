@@ -47,6 +47,9 @@ gems. No Ruby installation, actual blog or global gem configuration was changed.
   explicit label and exact-URL current-page indication.
 - `article-footer.html`: article-owned footer with native previous/next links
   from a trusted post document; no adjacent landmark when neither exists.
+- `archive.html`: ordered native article cards, dates and descriptive read links.
+  Descriptions are escaped plain text by default; rendered excerpts require the
+  explicit trusted-site-content opt-in described below.
 - `relative_url` is used before HTML escaping on internal links and CSS URLs.
   URL inputs are trusted Jekyll-generated paths; this is not a URL sanitizer.
   Do not use these includes with arbitrary external/untrusted URL models.
@@ -70,6 +73,55 @@ behaviour in this shell. Neither proof establishes real redirects/subscription
 continuity, rich excerpts, interactive menus, hosted Pages or browser/keyboard/
 print/assistive-technology acceptance. Follow the proof's isolated preparation
 instructions; this is not an installable theme or a real-blog migration recipe.
+
+## Article archive
+
+The archive takes trusted Jekyll post documents in caller-supplied order. It
+does not sort, paginate, infer a summary, or fetch content. With the existing
+Tesserae stylesheet loaded, use it below a page's `h1`:
+
+```liquid
+<h1>Articles</h1>
+{% include tesserae/archive.html posts=site.posts %}
+```
+
+Each card has an `h2` title link, native date, optional escaped `post.description`
+and a visible `Read article: <title>` link. Dates use `site.minima.date_format`
+when configured, otherwise `%b %-d, %Y`. URLs use `relative_url` before escaping.
+An empty/missing post list emits “No articles yet.” without empty article cards.
+When embedding under an `h2`, pass `heading_level=3`; only 2/3 are supported,
+with unsupported values falling back to `h2`. Existing grid/card/prose styles
+and tokens own presentation; there is no script or new palette.
+
+### Trusted rendered excerpts: explicit opt-in
+
+The default never renders `post.excerpt`, including when a description is absent.
+To render excerpts from **trusted site-author content only**, explicitly pass
+the Liquid boolean `true`, or a front-matter value whose YAML type is boolean:
+
+```liquid
+{% include tesserae/archive.html posts=site.posts trusted_excerpts=true %}
+```
+
+Omitted, `false`, strings (including `"true"`), numbers and missing values do not
+opt in. The flag belongs to this include call, not to a post's front matter or
+a global automatic policy. On opt-in, the already-rendered `post.excerpt` is
+inserted once inside `.ts-prose`; it is not escaped, rendered as Markdown again,
+sanitized or URL-rewritten. Blank excerpts fall back to the escaped description.
+
+This intentionally permits authored HTML and **is unsafe for arbitrary HTML or
+untrusted submissions**. Keep sanitization upstream if the site accepts such
+content; opting in does not make it safe. Site authors own the excerpt boundary
+(`excerpt_separator` or explicit excerpt), URLs, language, heading hierarchy and
+unique IDs. Prefer short paragraphs with links/emphasis; headings and repeated
+fragment IDs need deliberate archive-level composition. No automatic truncation
+or HTML repair is provided. Plain-text descriptions remain the safe default.
+The existing post-summary include and JSON renderer retain their plain-text-only
+contracts; this is a Jekyll-only feature, not a raw-HTML library component.
+
+See the [anonymous archive example and proof](../docs/jekyll-archive-proof.md)
+for populated/empty pages, plain/trusted modes and opt-in boundary cases. Real
+blog migration, hosted Pages and browser/keyboard/print acceptance remain open.
 
 ## Authored post prose
 

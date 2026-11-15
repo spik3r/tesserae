@@ -1,0 +1,19 @@
+{% comment %}Trusted Jekyll post documents only. Raw excerpts require boolean true and trusted site-author HTML; this is not a sanitizer. Caller owns h1 and excerpt heading/ID discipline.{% endcomment %}
+{% assign tesserae_archive_heading = "h2" %}
+{% if include.heading_level == 3 or include.heading_level == "3" %}{% assign tesserae_archive_heading = "h3" %}{% endif %}
+{% assign tesserae_archive_date = site.minima.date_format | default: "%b %-d, %Y" %}
+<div class="ts-grid">
+{% for post in include.posts %}
+  <article class="ts-card ts-wide">
+    <{{ tesserae_archive_heading }}><a href="{{ post.url | relative_url | escape }}">{{ post.title | escape }}</a></{{ tesserae_archive_heading }}>
+    <p><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: tesserae_archive_date | escape }}</time></p>
+    {% assign tesserae_archive_excerpt = "" %}
+    {% if include.trusted_excerpts == true %}{% capture tesserae_archive_excerpt %}{{ post.excerpt }}{% endcapture %}{% assign tesserae_archive_excerpt = tesserae_archive_excerpt | strip %}{% endif %}
+    {% if tesserae_archive_excerpt != "" %}<div class="ts-prose">{{ tesserae_archive_excerpt }}</div>
+    {% elsif post.description %}<p class="ts-archive-description">{{ post.description | escape }}</p>{% endif %}
+    <p><a href="{{ post.url | relative_url | escape }}">Read article: {{ post.title | escape }}</a></p>
+  </article>
+{% else %}
+  <p>No articles yet.</p>
+{% endfor %}
+</div>
