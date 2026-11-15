@@ -1,0 +1,9 @@
+---
+layout: default
+title: 'Archive opt-in boundaries'
+---
+<h1>Archive opt-in boundaries</h1>
+<section id="false"><h2>Boolean false</h2>{% include tesserae/archive.html posts=site.posts trusted_excerpts=false heading_level=3 %}</section>
+<section id="string"><h2>String true</h2>{% include tesserae/archive.html posts=site.posts trusted_excerpts="true" heading_level="3" %}</section>
+<section id="number"><h2>Number one</h2>{% include tesserae/archive.html posts=site.posts trusted_excerpts=1 heading_level=3 %}</section>
+<section id="missing"><h2>Missing value</h2>{% include tesserae/archive.html posts=site.posts trusted_excerpts=page.unset heading_level=3 %}</section>
