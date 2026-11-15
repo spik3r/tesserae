@@ -46,9 +46,9 @@ replace those local templates automatically.
 | Routes | No config-level permalink override; Jekyll 3.10 defaults to the `date` style | Original fixture retains `/notes/:year/:month/:day/:title/`. Metadata fixture verifies both the default `.html` route and a fictional front-matter directory permalink under both bundles. Public URLs and Atom IDs are checked separately; the override changes the feed ID. Real routes, redirects and subscription continuity remain uninventoried and unchanged. |
 | Document/head | Local default chooses page/site language; local head invokes `seo` and `feed_meta`, plus conditional production analytics | Metadata fixture verifies page/site/default language, canonical/OG/JSON-LD/feed output and inert analytics inclusion markers in development/production. Actual provider code and full blog head remain unverified. |
 | Post semantics | Local post owns title, configurable date format, optional page author, `h-entry`/`p-name`/`dt-published`/`e-content`/`u-url`, schema attributes and conditional comments | Metadata fixture tests these fields with `.ts-prose` on the body div and inert comment markers. Its candidate scalar-name policy adds site-author fallback with page precedence; the real page-only layout is unchanged. The authorless feed still has an empty name; real attribution and other author shapes remain unqualified. |
-| Home/navigation/footer | Local home uses h2/h3 post hierarchy, date format and optional rich excerpts; local header/footer own page links and navigation/social markup | The summary include supports h2/h3 but takes plain-text description, not excerpt HTML. Navigation, excerpt handling, footer structure and interactive menu behaviour are not covered. |
+| Home/navigation/footer | Local home uses h2/h3 post hierarchy, date format and optional rich excerpts; local header/footer own page links and navigation/social markup | The summary include supports h2/h3 but takes plain-text description, not excerpt HTML. The [anonymous article shell](jekyll-article-proof.md) verifies ordered native navigation, skip/main structure, separate article/site footers and reciprocal post neighbours on default dated routes. Real navigation/social markup, rich excerpts, interactive menus and browser behaviour remain unverified. |
 | Stylesheet ownership | `assets/main.scss` imports Minima and custom Sass; custom rules size footer columns | Metadata fixture uses only the exact Tesserae CSS asset and rejects extra stylesheets. Loading both theme stylesheets or replacing the real blog's required styles remains unqualified. |
-| Content/highlighting | Pinned Kramdown/GFM/Rouge pipeline | Synthetic headings, lists, quote, code, fragment link and local image/figure markup pass. Image checks cover alt/dimensions/caption, asset bytes and root/subpath URLs. Browser image rendering, real content/images, tables, coloured code tokens and plugin syntax remain outside this proof. |
+| Content/highlighting | Pinned Kramdown/GFM/Rouge pipeline | Synthetic headings, lists, quote, code, fragment link and local image/figure markup pass. Image checks cover alt/dimensions/caption, asset bytes and root/subpath URLs. The article-shell proof also checks native captioned simple tables with row/column headers. Browser image/table rendering, real content/images, complex tables, coloured code tokens and plugin syntax remain unverified. |
 | Presentation | Existing blog's screen, navigation and print behaviour | No browser, preview, keyboard, visual/print or assistive-technology QA was performed. Existing denied-preview restrictions remain in force. |
 
 Layout evidence: [default](https://github.com/spik3r/blog/blob/fd83f4c73f075c83cb72c0989130cd3cc6bb9d95/_layouts/default.html),
@@ -78,7 +78,10 @@ the versions above. Node CI exercises the verifier using hand-authored output
 and negative cases; it does not install Ruby or claim to run these real builds.
 
 The separate metadata fixture now covers the two pinned SEO/feed plugins,
-default synthetic routes and head/post contracts under one stylesheet owner.
+default/custom synthetic routes and head/post contracts under one stylesheet owner.
+The [article-shell proof](jekyll-article-proof.md) composes navigation, prose and
+footers with that metadata foundation using default dated routes. Its synthetic
+sequence/single/empty cases do not establish the real blog's route or layout parity.
 The Pages profile adds local default-plugin activation evidence. Next gates
 remain hosted/runtime parity, remaining plugin features, feed author policy
 and the unverified real route/layout contracts. Framework ports do not resolve
