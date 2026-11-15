@@ -146,6 +146,57 @@ test('CLI uses fatal UTF-8 decoding for files and stdin', t => {
   }
 });
 
+test('CLI locates recognized JSON syntax failures without printing source or parser text', t => {
+  const cwd=directory(t);
+  // Expected offsets are UTF-16 code units; lines/columns are one-based.
+  const cases = [
+    ['{',1,1,2], ['{"a" 1}',5,1,6], ['{"a":1 "b":2}',7,1,8],
+    ['[1 2]',3,1,4], ['"abc',4,1,5], ['"a\n"',2,1,3],
+    ['"\\x"',2,1,3], ['"\\uQ"',3,1,4], ['1.',2,1,3],
+    ['1e',2,1,3], ['-',1,1,2], ['{} x',3,1,4],
+    ['{"a":',5,1,6], ['',0,1,1],
+    ['{\n"SENSITIVE": 1,\n}',18,3,1],
+    ['{\r\n"a": 1,\r\n}',12,3,1], ['{\r"a": 1,\r}',10,3,1],
+    ['{"é🌱": 1 "b": 2}',10,1,11],
+    ['{\n"a":\n',7,3,1]
+  ];
+  for (const [source,offset,line,column] of cases) {
+    const path=join(cwd,'SENSITIVE-input.json');writeFileSync(path,source);
+    for (const result of [run([path]),run(['-'],source)]) {
+      failure(result,1,/Input is not valid JSON/);
+      assert.equal(result.stderr,`tesserae: Input is not valid JSON (UTF-8 without a BOM required). At line ${line}, column ${column} (UTF-16 offset ${offset}).\n`,JSON.stringify(source));
+    }
+    assert.equal(readFileSync(path,'utf8'),source);
+  }
+});
+
+test('CLI leaves excerpt-bearing syntax errors generic, including position-like input', () => {
+  for (const source of [
+    'SENSITIVE', '[1,]', '\ufeff'+input,
+    '{"SENSITIVE at position 1 (line 2 column 3)": }',
+    '"SENSITIVE" unexpected at position 3 (line 4 column 5)'
+  ]) {
+    const result=run(['-'],source);
+    failure(result,1,/Input is not valid JSON/);
+    // The last case has a genuine engine-supplied trailing-data position. It
+    // must use that offset, never position-like numbers later in caller text.
+    if(source.startsWith('"SENSITIVE"')) assert.match(result.stderr,/At line 1, column 13 \(UTF-16 offset 12\)/);
+    else assert.equal(result.stderr,'tesserae: Input is not valid JSON (UTF-8 without a BOM required).\n');
+  }
+});
+
+test('CLI syntax locations stay bounded by the existing input-byte limit', t => {
+  const cwd=directory(t),path=join(cwd,'model.json');
+  const source=' '.repeat(limit-1)+'{';
+  writeFileSync(path,source);
+  for(const result of [run([path]),run(['-'],source)]) {
+    failure(result,1,/Input is not valid JSON/);
+    assert.match(result.stderr,new RegExp(`At line 1, column ${limit+1} \\(UTF-16 offset ${limit}\\)`));
+    assert.ok(result.stderr.length<200);
+  }
+  failure(run(['-'],source+' '),1,/Input exceeds 1 MiB/);
+});
+
 test('CLI supplies safe model locations for file and stdin while leaving output empty', t => {
   const cwd = directory(t);
   const cases = [
