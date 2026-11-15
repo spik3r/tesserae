@@ -92,12 +92,17 @@ async function main(args) {
     return;
   }
   let html;
+  let describeValidation;
   try {
+    ({ validationDiagnostic: describeValidation } = await import('../html/validation.js'));
     const { renderPage } = await import('../html/index.js');
     html = renderPage(model);
-  } catch {
-    // Renderer and parser exceptions can contain caller data; never print them.
-    fail('Unable to render model. Check the tesserae/v1 contract and renderer assets.');
+  } catch (error) {
+    // Only internally recorded validation messages are safe to print. Asset,
+    // parser and unexpected exceptions retain the generic failure boundary.
+    const diagnostic = describeValidation?.(error);
+    fail(diagnostic ? `Unable to render model. ${diagnostic}`
+      : 'Unable to render model. Check the tesserae/v1 contract and renderer assets.');
     return;
   }
   process.stdout.write(html);

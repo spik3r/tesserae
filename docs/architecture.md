@@ -19,6 +19,19 @@ Components:
 
 At most 64 components, 8,000 UTF-16 code units per text value, 200,000 text code units per table, 1 MiB UTF-8 final document. Component `type` must be a primitive string naming a supported component; arrays and objects are rejected without property-key coercion. Unsupported components/options are refused. Lists must be dense arrays with an own element at every index; sparse arrays are rejected rather than silently losing content. Optional unit, description and subtitle fields may be omitted, undefined or empty strings, but other non-string values are rejected (including null, false and zero). This JS API is not a strict JSON parser: callers must handle duplicate keys and enforce upstream schemas. Additional object properties are ignored, never interpolated. The renderer performs no aggregate computations, inference, network access or arbitrary HTML insertion. It reads its bundled CSS once. Caller input is HTML-escaped; links, executable markup, images and expression evaluation are deliberately absent.
 
+## Validation diagnostics
+
+Validation failures in the HTML renderer preserve `TypeError`/`RangeError` and
+expose the stable code `ERR_TESSERAE_VALIDATION` plus a read-only, zero-based
+model `path`. Nested cell/entry/item errors identify the field; aggregate limits
+identify their owning collection or `$` for the complete document. Paths use
+contract keys only, and diagnostic messages never interpolate submitted values.
+The CLI adds these internally recorded locations to its existing render-failure
+prefix while retaining generic errors for parser, asset and unexpected failures.
+See [validation locations](../html/README.md#validation-locations) for examples
+and the first-failure/JavaScript-object limitations. This adds diagnostics to the
+existing HTML validator, not a new shared validator or accepted input shape.
+
 ## Foundry boundary
 
 Foundry's existing Go `dashboard/v1` and local `report/v1` schemas remain domain/generation contracts. They must not be silently replaced with this presentation model. A future **explicit, version-pinned adapter** should map accepted models into supported Tesserae components and reject unsupported features. Chart/diagram support is not implemented in this slice. Foundry's canonical model hashes, manifests, ownership guards and output-size rules stay in Foundry. The present Node API does not imply that Go pipelines should shell out to Node; decide between shared CSS assets, a Go adapter, or a versioned renderer protocol only after a small integration proof.

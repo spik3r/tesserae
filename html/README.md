@@ -32,6 +32,36 @@ The experimental Jekyll fixture uses a small post layout to wrap Jekyll's render
 
 `components.css` owns HTML-specific layout and print rules. `tesserae.css` is generated from shared themes plus these rules and checked by `npm test`. A CSS-only page does not gain the Node model validator automatically; callers must ensure valid values and safely escape their data.
 
+### Validation locations
+
+For a rejected model, `renderPage` throws a `TypeError` or `RangeError` with
+read-only `code: 'ERR_TESSERAE_VALIDATION'` and `path` properties. The path starts
+at `$`, uses fixed field names and zero-based indices, and identifies the invalid
+field or the owner of a shared limit. For example, a non-text table cell can
+report `$.components[2].rows[4][1]`; a grouped-table row count limit reports
+`$.components[2].groups`, and the complete HTML byte limit reports `$`.
+
+```js
+try {
+  renderPage(model);
+} catch (error) {
+  if (error.code === 'ERR_TESSERAE_VALIDATION') {
+    console.error(`${error.path}: ${error.message}`);
+  } else {
+    throw error;
+  }
+}
+```
+
+This reports the first encountered validation failure, not a list of all errors
+or a JSON source line/column. Human-readable message wording may evolve; use
+`code` and `path` for programmatic handling. Validation messages do not include
+submitted values or arbitrary property names. Unknown fields remain ignored and
+all existing input/output limits and valid output are unchanged. Unexpected
+exceptions (including caller getters/proxies in the JavaScript API) are not
+relabelled as model validation errors. This diagnostic contract is for the
+existing plain-data model, not validation of executable JavaScript objects.
+
 ## JSON command-line interface
 
 Run `node bin/tesserae.js --help` from the repository root, or use the executable `./bin/tesserae.js`. Node 22+ is required; no package installation or build is needed. The package also declares a `tesserae` bin for local package consumers. Paths resolve from the caller's working directory, including when the executable is invoked through a symlink.
@@ -48,6 +78,19 @@ Input is capped at 1 MiB (1,048,576 bytes), before UTF-8 decoding or JSON parsin
 The existing renderer separately limits the complete UTF-8 HTML document to 1 MiB. HTML is fully rendered before any output is written, so input and model failures leave stdout empty. Success writes exactly the renderer's standalone HTML, with inline CSS, escaped text and no scripts or remote assets. The CLI opens no browser, makes no network requests and writes no output files itself. Shell redirection can create or truncate files before the CLI runs, even on failure; use a destination different from the input.
 
 Exit status is `0` for rendering or help, `2` for invalid arguments, and `1` for input, rendering or output failures (including a broken pipe). Diagnostics go to stderr and omit input content, file paths and exception stacks. A rendering error can mean an invalid model, excessive rendered output, or missing renderer assets. A failed output write may leave partial HTML at the destination; no atomic output guarantee is made. Help writes usage text to stdout instead of HTML.
+
+Model validation failures retain the `Unable to render model.` prefix and append
+the safe location and reason, for example:
+
+```text
+tesserae: Unable to render model. $.components[0].rows[1][0]: Expected plain-text cell
+```
+
+The CLI only prints diagnostics recorded internally by the validator. Missing
+assets and unexpected exceptions keep the generic render failure; malformed JSON
+syntax and invalid UTF-8 keep their existing generic diagnostics. No parser
+exception text, input values, source paths or stack traces are printed. File and
+stdin modes use the same validation, with empty stdout on input/model failure.
 
 ## Document language and direction
 
