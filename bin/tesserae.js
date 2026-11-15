@@ -26,6 +26,39 @@ function fail(message, code = 1) {
   process.stderr.write(`tesserae: ${message}\n`);
 }
 
+function jsonLocation(error, source) {
+  if (!(error instanceof SyntaxError)) return '';
+  // V8 sometimes includes caller text in errors. Recognise only complete fixed
+  // message forms; never echo an exception or extract numbers from an excerpt.
+  const reasons = [
+    "Expected property name or '}'", 'Expected double-quoted property name',
+    "Expected ':' after property name", "Expected ',' or '}' after property value",
+    "Expected ',' or ']' after array element", 'Unterminated string',
+    'Bad control character in string literal', 'Bad escaped character',
+    'Bad Unicode escape', 'Unterminated fractional number',
+    'Exponent part is missing a number', 'No number after minus sign',
+    'Unexpected non-whitespace character after JSON'
+  ];
+  let offset;
+  if (error.message === 'Unexpected end of JSON input') offset = source.length;
+  else {
+    const match = /^(.*?) (?:in JSON |)at position (\d+)(?: \(line \d+ column \d+\))?$/.exec(error.message);
+    if (!match || !reasons.includes(match[1])) return '';
+    offset = Number(match[2]);
+  }
+  if (!Number.isSafeInteger(offset) || offset < 0 || offset > source.length) return '';
+  // Positions index JavaScript strings (UTF-16 units), not UTF-8 bytes or glyphs.
+  // Treat CRLF as one line break, and lone CR/LF as line breaks as well.
+  let line = 1, column = 1;
+  for (let i = 0; i < offset; i++) {
+    if (source[i] === '\r' || source[i] === '\n') {
+      if (source[i] === '\r' && source[i + 1] === '\n' && i + 1 < offset) i++;
+      line++; column = 1;
+    } else column++;
+  }
+  return ` At line ${line}, column ${column} (UTF-16 offset ${offset}).`;
+}
+
 // Stream errors may arrive after write() returns, including a closed pipeline.
 process.stdout.on('error', error => {
   fail(error.code === 'EPIPE' ? 'Output pipe closed.' : 'Unable to write output.');
@@ -87,8 +120,8 @@ async function main(args) {
   let model;
   try {
     model = JSON.parse(source);
-  } catch {
-    fail('Input is not valid JSON (UTF-8 without a BOM required).');
+  } catch (error) {
+    fail(`Input is not valid JSON (UTF-8 without a BOM required).${jsonLocation(error, source)}`);
     return;
   }
   let html;

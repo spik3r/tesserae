@@ -87,10 +87,32 @@ tesserae: Unable to render model. $.components[0].rows[1][0]: Expected plain-tex
 ```
 
 The CLI only prints diagnostics recorded internally by the validator. Missing
-assets and unexpected exceptions keep the generic render failure; malformed JSON
-syntax and invalid UTF-8 keep their existing generic diagnostics. No parser
+assets and unexpected exceptions keep the generic render failure; invalid UTF-8
+keeps its existing generic diagnostic. No parser
 exception text, input values, source paths or stack traces are printed. File and
 stdin modes use the same validation, with empty stdout on input/model failure.
+
+For malformed JSON syntax, the existing `Input is not valid JSON (UTF-8 without
+a BOM required).` prefix may be followed by a safe source location:
+
+```text
+tesserae: Input is not valid JSON (UTF-8 without a BOM required). At line 3, column 1 (UTF-16 offset 18).
+```
+
+Locations are best-effort: the CLI recognizes fixed Node/V8 position-bearing
+error forms and unexpected EOF, without printing their messages or excerpts.
+Other forms keep the generic diagnostic rather than guessing. Node engine
+message changes can therefore reduce location coverage without changing JSON
+acceptance. `JSON.parse` remains the sole parser; no second parser or input
+repair is applied. The first syntax failure stops before model validation.
+
+Line and column are one-based; offset is zero-based. Columns and offsets count
+UTF-16 code units in the decoded source, not UTF-8 bytes, graphemes or display
+width. CRLF counts as one line break, and lone CR/LF each start a new line.
+An EOF location points immediately after the source. This differs from the
+model paths reported after successful parsing. The 1 MiB byte limit is enforced
+before parsing/location calculation, and exit status remains `1` with empty
+stdout for either failure kind.
 
 ## Document language and direction
 
