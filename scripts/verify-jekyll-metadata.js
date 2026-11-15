@@ -3,7 +3,6 @@ import {readFileSync, readdirSync, realpathSync} from 'node:fs';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-const postPath = '2020/01/02/synthetic-notes.html';
 const date = '2020-01-02T03:04:05+00:00';
 const title = 'Synthetic notes &amp; “quotes”';
 const escapedTitle = 'Synthetic notes &amp; &quot;quotes&quot;';
@@ -21,17 +20,22 @@ function files(directory, prefix = '') {
 
 /** Exact contracts for this anonymous fixture, not a general HTML/XML validator. */
 export function verifyJekyllMetadata({directory, scenario, baseurl, environment}) {
-  assert.ok(['full','minimal','site-author'].includes(scenario), 'Expected full, minimal or site-author scenario');
+  assert.ok(['full','minimal','site-author','permalink'].includes(scenario), 'Expected full, minimal, site-author or permalink scenario');
   assert.ok(['','/blog'].includes(baseurl), 'Expected root or /blog baseurl');
   assert.ok(['development','production'].includes(environment), 'Expected development or production environment');
+  const postRoute = scenario === 'permalink' ? 'archive/fictional-note/' : '2020/01/02/synthetic-notes.html';
+  const postPath = postRoute.endsWith('/') ? `${postRoute}index.html` : postRoute;
   assert.deepEqual(files(directory).sort(), ['assets/tesserae.css', 'feed.xml', 'index.html', postPath].sort(), 'Unexpected output routes/assets');
   const read = path => readFileSync(join(directory, path), 'utf8');
   assert.equal(read('assets/tesserae.css'), readFileSync(css, 'utf8'), 'CSS differs from current Tesserae asset');
-  const full = scenario === 'full';
+  const full = ['full','permalink'].includes(scenario);
   const configuredSiteAuthor = scenario === 'minimal' ? undefined : siteAuthor;
   const postAuthor = full ? pageAuthor : configuredSiteAuthor;
   const origin = `https://example.invalid${baseurl}`;
-  const postUrl = `${origin}/${postPath}`;
+  const postUrl = `${origin}/${postRoute}`;
+  // Jekyll 3.10 derives post.id from the URL directory and original slug.
+  // A permalink is not an Atom entry ID with its extension removed.
+  const postId = `${origin}/${scenario === 'permalink' ? 'archive/synthetic-notes' : '2020/01/02/synthetic-notes'}`;
   const index = read('index.html');
   const post = read(postPath);
   const feed = read('feed.xml');
@@ -77,11 +81,11 @@ export function verifyJekyllMetadata({directory, scenario, baseurl, environment}
     else assert.doesNotMatch(html, /name="author"/);
   }
 
-  once(index, `<h2><a href="${baseurl}/${postPath}">${escapedTitle}</a></h2>`);
+  once(index, `<h2><a href="${baseurl}/${postRoute}">${escapedTitle}</a></h2>`);
   once(post, '<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">');
   once(post, `<h1 class="post-title p-name" itemprop="name headline">${escapedTitle}</h1>`);
   assert.match(post, new RegExp(`<time class="dt-published" datetime="${date.replaceAll('+','\\+')}" itemprop="datePublished">${full ? '2020/01/02' : 'Jan 2, 2020'}\\s*</time>`));
-  once(post, `<a class="u-url" href="${baseurl}/${postPath}" hidden></a>`);
+  once(post, `<a class="u-url" href="${baseurl}/${postRoute}" hidden></a>`);
   const prose = post.match(/<div class="post-content e-content ts-prose" itemprop="articleBody">([\s\S]*?)<\/div>/);
   assert.ok(prose, 'Missing prose/metadata boundary');
   once(prose[1], '<h2 id="fictional-section">Fictional section</h2>');
@@ -100,7 +104,7 @@ export function verifyJekyllMetadata({directory, scenario, baseurl, environment}
   once(feed, `<title type="html">Synthetic notes &amp;amp; “quotes”</title>`);
   once(feed, `<link href="${postUrl}" rel="alternate" type="text/html" title="Synthetic notes &amp;amp; “quotes”" />`);
   once(feed, `<published>${date}</published>`);
-  once(feed, `<id>${postUrl.slice(0, -5)}</id>`);
+  once(feed, `<id>${postId}</id>`);
   once(feed, `<content type="html" xml:base="${postUrl}"><![CDATA[${prose[1].trim()}]]></content>`);
   once(feed, '<summary type="html"><![CDATA[A fictional summary & nothing personal.]]></summary>');
   // Check feed and entry authors separately: a fallback repeats the same name.
@@ -124,7 +128,7 @@ function isEntrypoint() {
 if (isEntrypoint()) {
   const args = process.argv.slice(2);
   assert.ok(args.length === 8 && args[0] === '--directory' && args[2] === '--scenario' && args[4] === '--baseurl' && args[6] === '--environment',
-    'Usage: node scripts/verify-jekyll-metadata.js --directory PATH --scenario full|minimal|site-author --baseurl ""|/blog --environment development|production');
+    'Usage: node scripts/verify-jekyll-metadata.js --directory PATH --scenario full|minimal|site-author|permalink --baseurl ""|/blog --environment development|production');
   verifyJekyllMetadata({directory:args[1], scenario:args[3], baseurl:args[5], environment:args[7]});
   console.log('Synthetic SEO/feed metadata contracts passed (not full Pages or presentation verification).');
 }

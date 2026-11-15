@@ -9,12 +9,12 @@ No real posts or site identity data were copied into fixtures.
 
 Follow-up based on merged PR #11 (`90dbcabe92084a47cefd658c093062536c8bf0a1`):
 the separate [anonymous SEO/feed proof](jekyll-metadata-proof.md) now passes
-twelve builds with the two pinned plugins, head/post contracts and explicit
+sixteen builds with the two pinned plugins, head/post contracts and explicit
 site-author fallback/page-author precedence. The original
 rendering-subset evidence below remains valid; full Pages/blog compatibility
 is still unverified.
 
-The opt-in [Pages 232 profile](jekyll-pages-proof.md) now passes twelve local
+The opt-in [Pages 232 profile](jekyll-pages-proof.md) now passes sixteen local
 builds on Ruby 3.3.11 with default plugins plus SEO/feed and the theme disabled.
 This narrows the activation gap; it does not reproduce hosted Pages or the real blog.
 
@@ -40,10 +40,10 @@ replace those local templates automatically.
 | Area | Blog contract at the inspected revision | Current Tesserae evidence and remaining check |
 | --- | --- | --- |
 | Rendering versions | Jekyll 3.10.0, Liquid 4.0.4, Kramdown 2.4.0, GFM 1.1.0, Rouge 3.30.0 | These five fixture versions now match. Previously Kramdown was unpinned and the tested bundle used 2.5.2. Nine synthetic builds pass with the pinned subset. |
-| Pages/plugins | Pages 232 and its plugin dependency set | Default metadata profile checks SEO/feed only. Opt-in Pages profile checks safe mode and loaded sources for ten default plugins plus SEO/feed; twelve builds pass. Individual plugin features, Minima, other permitted plugins and hosted behaviour remain unverified. |
+| Pages/plugins | Pages 232 and its plugin dependency set | Default metadata profile checks SEO/feed only. Opt-in Pages profile checks safe mode and loaded sources for ten default plugins plus SEO/feed; sixteen builds pass. Individual plugin features, Minima, other permitted plugins and hosted behaviour remain unverified. |
 | Ruby/transitives | Lock records Bundler 2.6.3, base64 0.2.0 and bigdecimal 3.1.9; inspected files do not pin Ruby | Subset proof uses Ruby 4.0.5; Pages 232 fails resolution there because CommonMarker requires Ruby below 4.0. Pages profile passes on existing Ruby 3.3.11 / Bundler 4.0.11 with fresh transitives and the fixture helpers. Neither reproduces the entire blog lockfile or deployment runtime. |
 | Base path | `/blog`; links and stylesheet use `relative_url` | Full/minimal/empty fixtures pass at root, `/synthetic-preview` and `/blog`. Verifier rejects missing/doubled `/blog` prefixes. This tests path composition, not real routes. |
-| Routes | No config-level permalink override; Jekyll 3.10 defaults to the `date` style | Original fixture retains `/notes/:year/:month/:day/:title/`. Metadata fixture verifies the default synthetic `.html` route at root and `/blog`. Actual post/front-matter routes remain uninventoried and unchanged. |
+| Routes | No config-level permalink override; Jekyll 3.10 defaults to the `date` style | Original fixture retains `/notes/:year/:month/:day/:title/`. Metadata fixture verifies both the default `.html` route and a fictional front-matter directory permalink under both bundles. Public URLs and Atom IDs are checked separately; the override changes the feed ID. Real routes, redirects and subscription continuity remain uninventoried and unchanged. |
 | Document/head | Local default chooses page/site language; local head invokes `seo` and `feed_meta`, plus conditional production analytics | Metadata fixture verifies page/site/default language, canonical/OG/JSON-LD/feed output and inert analytics inclusion markers in development/production. Actual provider code and full blog head remain unverified. |
 | Post semantics | Local post owns title, configurable date format, optional page author, `h-entry`/`p-name`/`dt-published`/`e-content`/`u-url`, schema attributes and conditional comments | Metadata fixture tests these fields with `.ts-prose` on the body div and inert comment markers. Its candidate scalar-name policy adds site-author fallback with page precedence; the real page-only layout is unchanged. The authorless feed still has an empty name; real attribution and other author shapes remain unqualified. |
 | Home/navigation/footer | Local home uses h2/h3 post hierarchy, date format and optional rich excerpts; local header/footer own page links and navigation/social markup | The summary include supports h2/h3 but takes plain-text description, not excerpt HTML. Navigation, excerpt handling, footer structure and interactive menu behaviour are not covered. |

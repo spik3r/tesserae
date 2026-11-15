@@ -41,14 +41,38 @@ head/post inclusion conditions, not provider code, network behaviour or further
 conditions inside the real includes. There are no executable scripts; the SEO
 plugin emits one `application/ld+json` data block per HTML page.
 
+## Custom permalink case
+
+The fourth case, `permalink`, retains the full case's metadata and sets only
+the fictional post's front-matter permalink to `/archive/fictional-note/`.
+The verifier distinguishes three values at `/blog`:
+
+| Contract | Expected value |
+| --- | --- |
+| Output file relative to destination | `archive/fictional-note/index.html` |
+| Canonical/public URL | `https://example.invalid/blog/archive/fictional-note/` |
+| Atom entry ID | `https://example.invalid/blog/archive/synthetic-notes` |
+
+Index links, hidden `u-url`, canonical/OG/JSON-LD URLs and feed link/content
+base use the public route, including its trailing slash. The old dated output
+file must be absent. Root builds exercise the same contracts without `/blog`.
+
+The entry ID is deliberately separate. [Jekyll 3.10's document ID](https://github.com/jekyll/jekyll/blob/v3.10.0/lib/jekyll/document.rb)
+combines the URL directory with the post slug; [feed 0.17.0](https://github.com/jekyll/jekyll-feed/blob/v0.17.0/lib/jekyll-feed/feed.xml)
+uses that ID while its link uses `post.url`. Changing a permalink can therefore
+change feed identity, even if the source filename and date stay the same.
+This proof does not preserve existing subscriptions, create redirects or
+inventory real blog front matter. Those remain migration acceptance checks.
+
 ## Reproduce
 
-From the Tesserae checkout, prepare three fresh directories:
+From the Tesserae checkout, prepare four fresh directories:
 
 ```sh
 node scripts/jekyll-metadata-fixture.js --scenario full
 node scripts/jekyll-metadata-fixture.js --scenario minimal
 node scripts/jekyll-metadata-fixture.js --scenario site-author
+node scripts/jekyll-metadata-fixture.js --scenario permalink
 ```
 
 Each command prints a new system-temp directory. No destination option is
@@ -78,7 +102,7 @@ each output with its matching case, path and environment, for example:
 node scripts/verify-jekyll-metadata.js --directory /path/to/full-fixture/_site-blog-production --scenario full --baseurl /blog --environment production
 ```
 
-Use `--baseurl ''` for root output, and repeat for all three scenarios and both
+Use `--baseurl ''` for root output, and repeat for all four scenarios and both
 environments. The verifier checks exact known-fixture contracts: output routes,
 canonical/OG URLs, JSON-LD fields, feed discovery and entries, language/date/
 author metadata, microformats, prose boundary, hook gates and CSS bytes. It
@@ -87,12 +111,17 @@ does not parse arbitrary HTML/XML or validate accessibility or search rankings.
 
 ## Evidence and limits
 
-On 14 November 2026, all twelve fresh real builds and output checks passed with
+On 14 November 2026, all sixteen fresh subset builds and output checks passed with
 Ruby 4.0.5 / Bundler 4.0.11, Jekyll 3.10.0, Liquid 4.0.4, Kramdown 2.4.0, GFM
 parser 1.1.0, Rouge 3.30.0 and the two plugin pins above. The private bundle
 also used base64 0.3.0 and bigdecimal 4.1.3; this is not the full blog lockfile
 or hosted Pages runtime. This follow-up reused the private bundle frozen;
 no gems were installed or changed.
+
+The same sixteen cases also passed with the Pages profile on Ruby 3.3.11,
+alongside eight Pages runtime activation checks. All 24 production outputs
+across the two profiles matched the twelve shared snapshots after documented
+normalization. The original three scenarios' snapshots did not change.
 
 Node tests use recorded output from these builds, with whitespace and the
 feed build timestamp normalised, plus deliberate corruptions. CI does not
@@ -102,7 +131,7 @@ standards-conformance test. In particular, a site without author data needs a
 separate author policy before publishing an Atom feed.
 
 The original nine-build rendering fixture remains separate and unchanged.
-Full Pages plugin activation, real front-matter/routes/content, navigation,
+Remaining Pages plugin features, real front-matter/routes/content, navigation,
 excerpts, theme-specific styles, real analytics/comments and deployment remain
 unverified. No browser, preview, visual, print, keyboard or assistive-technology
 checks were performed. This fixture provides no approval to change the blog.

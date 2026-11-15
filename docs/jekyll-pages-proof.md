@@ -4,7 +4,7 @@ The metadata fixture has an opt-in `--stack pages` profile. It adds
 `github-pages` 232 in the `jekyll_plugins` Gemfile group, disables the default
 theme with `theme: null`, and supplies the fictional repository `fictional/fixture`.
 Tesserae remains the sole stylesheet owner. The existing `subset` default and
-all three metadata scenarios remain available.
+all four metadata scenarios remain available.
 
 This tests Pages' default plugin activation plus the explicit SEO/feed plugins
 against anonymous local layouts. It does not test every permitted plugin,
@@ -33,6 +33,7 @@ From the Tesserae checkout:
 node scripts/jekyll-metadata-fixture.js --scenario full --stack pages
 node scripts/jekyll-metadata-fixture.js --scenario minimal --stack pages
 node scripts/jekyll-metadata-fixture.js --scenario site-author --stack pages
+node scripts/jekyll-metadata-fixture.js --scenario permalink --stack pages
 ```
 
 Each command creates a new disposable directory. No destination option is
@@ -85,11 +86,13 @@ HTML. Keep the runtime check and real build as separate required steps.
 
 ## Evidence and remaining gates
 
-On 14 November 2026, twelve Pages-backed builds/output checks and six runtime
-activation checks passed: full/minimal/site-author at root and `/blog`, in
-development and production. All nine production snapshots matched the existing
+On 14 November 2026, sixteen Pages-backed builds/output checks and eight runtime
+activation checks passed: full/minimal/site-author/permalink at root and `/blog`, in
+development and production. All twelve production snapshots matched the
 subset snapshots after the documented whitespace/feed timestamp normalization.
-No new golden output was needed. Node CI tests preparation and recorded-output
+The permalink case adds a directory-style route and a separate Atom entry ID;
+see [the route contracts](jekyll-metadata-proof.md#custom-permalink-case).
+Node CI tests preparation and recorded-output
 contracts; it does not install Ruby or run this Pages matrix.
 
 The active set is the ten [Pages 232 default plugins](https://github.com/github/pages-gem/blob/v232/lib/github-pages/plugins.rb)
