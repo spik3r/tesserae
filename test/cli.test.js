@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, symlinkSync, mkdirSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -144,6 +144,44 @@ test('CLI uses fatal UTF-8 decoding for files and stdin', t => {
     failure(run([path]), 1, /not valid UTF-8/);
     failure(run(['-'], bytes), 1, /not valid UTF-8/);
   }
+});
+
+test('CLI supplies safe model locations for file and stdin while leaving output empty', t => {
+  const cwd = directory(t);
+  const cases = [
+    [{...model,theme:'SENSITIVE\n\u001b[31m'},'$.theme: Unsupported option; expected slate|sand'],
+    [{...model,components:[{type:'table',title:'SENSITIVE',columns:['A'],rows:[['ok'],[false]]}]},'$.components[0].rows[1][0]: Expected plain-text cell'],
+    [{...model,components:[{type:'grouped-table',title:'Groups',columns:['A'],groups:[{title:'SENSITIVE',rows:[[false]]}]}]},'$.components[0].groups[0].rows[0][0]: Expected plain-text cell'],
+    [{...model,components:[{type:'recommendations',title:'Actions',items:[{title:'SENSITIVE',action:''}]}]},'$.components[0].items[0].action: Heading cannot be empty'],
+    [null,'$: Expected tesserae/v1']
+  ];
+  for (const [invalid,diagnostic] of cases) {
+    const source=JSON.stringify(invalid),path=join(cwd,'SENSITIVE-model.json');
+    writeFileSync(path,source);
+    for (const result of [run([path]),run(['-'],source)]) {
+      failure(result,1,/Unable to render model/);
+      assert.equal(result.stderr,`tesserae: Unable to render model. ${diagnostic}\n`);
+    }
+    assert.equal(readFileSync(path,'utf8'),source);
+  }
+});
+
+test('CLI keeps missing assets and unexpected renderer exceptions generic', t => {
+  const cwd=directory(t);
+  writeFileSync(join(cwd,'package.json'),'{"type":"module"}');
+  for (const part of ['bin','html','common']) mkdirSync(join(cwd,part));
+  for (const path of ['bin/tesserae.js','html/index.js','html/validation.js','html/tesserae.css','common/options.js']) {
+    copyFileSync(new URL(`../${path}`,import.meta.url),join(cwd,path));
+  }
+  const invoke=()=>spawnSync(process.execPath,[join(cwd,'bin/tesserae.js'),'-'],{input,encoding:'utf8',timeout:10000});
+  success(invoke(),expected);
+  const generic='tesserae: Unable to render model. Check the tesserae/v1 contract and renderer assets.\n';
+  rmSync(join(cwd,'html/tesserae.css'));
+  let result=invoke();failure(result,1,/Unable to render model/);assert.equal(result.stderr,generic);
+  writeFileSync(join(cwd,'html/index.js'),`export function renderPage(){throw Object.assign(new TypeError('SENSITIVE'),{code:'ERR_TESSERAE_VALIDATION',path:'$.SENSITIVE'});}`);
+  result=invoke();failure(result,1,/Unable to render model/);assert.equal(result.stderr,generic);
+  rmSync(join(cwd,'html/validation.js'));
+  result=invoke();failure(result,1,/Unable to render model/);assert.equal(result.stderr,generic);
 });
 
 test('CLI preserves JSON.parse and renderer semantics for duplicate and extra fields', () => {
