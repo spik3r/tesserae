@@ -1,6 +1,6 @@
 # Jekyll adapter: experimental proof
 
-Two experimental Liquid includes and a fictional disposable test site. This is
+Experimental Liquid includes and isolated fictional test sites. This is
 **not exported or installable**, nor production-ready. React and Solid remain
 unimplemented. No blog content, URLs, configuration or deployment is modified.
 
@@ -43,12 +43,33 @@ gems. No Ruby installation, actual blog or global gem configuration was changed.
 - `header.html`: escaped title and optional plain-text description.
 - `post-summary.html`: native article, h2, date and tags. Pass a trusted Jekyll
   `post` object. Description is explicitly plain text, never excerpt HTML.
+- `site-nav.html`: ordered native links from trusted page documents, with an
+  explicit label and exact-URL current-page indication.
+- `article-footer.html`: article-owned footer with native previous/next links
+  from a trusted post document; no adjacent landmark when neither exists.
 - `relative_url` is used before HTML escaping on internal links and CSS URLs.
   URL inputs are trusted Jekyll-generated paths; this is not a URL sanitizer.
   Do not use these includes with arbitrary external/untrusted URL models.
 - CSS is the existing built asset. No Sass/Node runtime, scripts or new palette.
   Global typography styles mean this requires deliberate layout integration,
   not dropping the stylesheet into an existing theme blindly.
+
+## Composed article shell
+
+For a complete anonymous navigation/post/footer composition, start with
+[`article-fixture/`](article-fixture/) and the [article-shell proof](../docs/jekyll-article-proof.md).
+It reuses the metadata fixture and current CSS, with explicit page ordering,
+a unique skip/main target, and an article footer outside the prose wrapper.
+The three cases cover a three-post sequence, a single post and no posts, plus
+an ordinary page. The proof records real subset/Pages builds, output checks
+and plugin activation separately from Node recorded-output contracts.
+
+The shell uses default dated routes and slate/auto/comfortable presentation.
+The separate custom-permalink proof does not establish custom-route neighbour
+behaviour in this shell. Neither proof establishes real redirects/subscription
+continuity, rich excerpts, interactive menus, hosted Pages or browser/keyboard/
+print/assistive-technology acceptance. Follow the proof's isolated preparation
+instructions; this is not an installable theme or a real-blog migration recipe.
 
 ## Authored post prose
 
