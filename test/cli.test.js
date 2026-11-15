@@ -262,6 +262,71 @@ test('CLI rejects oversized stdin without waiting for producer EOF', { timeout: 
   failure(await closed, 1, /Input exceeds 1 MiB/);
 });
 
+test('CLI rejects read failures after a valid JSON prefix and closes file handles', t => {
+  const cwd=directory(t),file=join(cwd,'SENSITIVE-input.json'),trace=join(cwd,'trace.json');
+  // Receiving a complete-looking JSON prefix is not EOF. The trailing whitespace
+  // forces another read, which must succeed before any rendering is allowed.
+  const source=input+' '.repeat(128);
+  writeFileSync(file,source);
+  for(const failAfter of [0,1,null]) {
+    const preload=`
+      import fs from 'node:fs';
+      import promises from 'node:fs/promises';
+      import {syncBuiltinESMExports} from 'node:module';
+      const originalRead=fs.read,originalOpen=promises.open;
+      const trace={reads:0,bytes:0,eof:0,opened:0,closed:0,failed:false};
+      const failAfter=${JSON.stringify(failAfter)};
+      const injected=function(fd,buffer,offset,length,position,callback) {
+        const attempt=trace.reads++;
+        if(attempt===failAfter) {
+          trace.failed=true;
+          return setImmediate(()=>callback(Object.assign(new Error('SENSITIVE injected read failure'),{code:'EIO'})));
+        }
+        // Force the first successful read to end at the valid JSON prefix.
+        const bounded=attempt===0 ? Math.min(length,${Buffer.byteLength(input)}) : length;
+        return originalRead(fd,buffer,offset,bounded,position,(error,bytesRead,returnedBuffer)=>{
+          if(!error) {trace.bytes+=bytesRead;if(bytesRead===0) trace.eof++;}
+          callback(error,bytesRead,returnedBuffer);
+        });
+      };
+      // Preserve fs.read's promisify result metadata, so this seam exercises
+      // the normal {bytesRead, buffer} contract rather than a different API.
+      Object.defineProperties(injected,Object.getOwnPropertyDescriptors(originalRead));
+      fs.read=injected;
+      promises.open=async(...args)=>{
+        const handle=await originalOpen(...args);trace.opened++;
+        const close=handle.close.bind(handle);
+        handle.close=async()=>{await close();trace.closed++;};
+        return handle;
+      };
+      syncBuiltinESMExports();
+      process.on('exit',()=>fs.writeFileSync(${JSON.stringify(trace)},JSON.stringify(trace)));
+    `;
+    for(const args of [[file],['-']]) {
+      const result=spawnSync(process.execPath,['--import',`data:text/javascript,${encodeURIComponent(preload)}`,cli,...args],{
+        input:args[0]==='-'?source:undefined,encoding:'utf8',cwd,timeout:10000,maxBuffer:2*limit
+      });
+      const observed=JSON.parse(readFileSync(trace,'utf8'));
+      assert.equal(observed.opened,args[0]==='-'?0:1);
+      assert.equal(observed.closed,observed.opened,'Every opened input handle must close, including after EIO');
+      if(failAfter===null) {
+        success(result,expected);
+        assert.equal(observed.failed,false);
+        assert.equal(observed.bytes,Buffer.byteLength(source));
+        assert.equal(observed.eof,1,'Success must include a read returning EOF');
+      } else {
+        failure(result,1,/Unable to read input/);
+        assert.equal(result.stderr,'tesserae: Unable to read input. Use a readable regular file or - for stdin.\n');
+        assert.equal(observed.failed,true,'The controlled read failure must actually occur');
+        assert.equal(observed.eof,0);
+        assert.equal(observed.reads,failAfter+1,'Do not continue reading after failure');
+        assert.equal(observed.bytes,failAfter===0?0:Buffer.byteLength(input));
+      }
+    }
+  }
+  assert.equal(readFileSync(file,'utf8'),source);
+});
+
 test('CLI decodes UTF-8 across separate stdin writes', { timeout: 10000 }, async t => {
   const { child, result } = childProcess(t);
   const closed = result();
