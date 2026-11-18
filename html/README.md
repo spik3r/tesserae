@@ -143,6 +143,8 @@ For tables whose first column identifies each row, set `rowHeaders: true` on the
 
 Set a table's optional `description` to plain text explaining units, abbreviations or missing-value conventions. It appears on a separate line inside the native `<caption>`, keeping the explanation attached to the table without generated IDs or extra focus stops. The scroll region keeps the short table title as its accessible label. Omitted, undefined or empty descriptions retain the original title-only caption; other non-string values are rejected, and the usual text/output bounds apply. This supplies context, not automatic interpretation of cells or an assistive-technology certification.
 
+Each ordinary table permits at most 200,000 UTF-16 code units across its supplied row-cell strings, counted before HTML escaping. This includes cells rendered as row headers. The title, description and column labels do not count toward that sum; each keeps its own 8,000-unit text limit. Each ordinary table has its own cell budget. A grouped table shares its cell budget across all groups. The complete rendered document must still fit the separate 1 MiB UTF-8 output limit.
+
 ## Report metadata and grouped tables
 
 Use `metadata` for ordered label/value pairs under a title. It renders a native `<dl>` with `<dt>` labels and `<dd>` values, using `ts-metadata` for a responsive definition grid. Values must be explicit non-empty text, including caller-selected labels such as “Unknown”. No timestamps, owners or conclusions are invented.

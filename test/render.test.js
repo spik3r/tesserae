@@ -18,6 +18,61 @@ test('bounded text, lists and final UTF8 output',()=>{
  const table={type:'table',title:'A',columns:Array(8).fill('Col'),rows:Array.from({length:200},()=>Array(8).fill('é'.repeat(1000)))};assert.throws(()=>renderPage(page([table])),/bounded budget/);
  const section={type:'section',title:'A',paragraphs:Array(16).fill('é'.repeat(8000))};assert.throws(()=>renderPage(page(Array(5).fill(section))),/1 MiB/);
 });
+const tableBudgetFixture=(character='x')=>({
+ type:'table',
+ title:'Title'+'t'.repeat(7995),
+ description:'Description'+'d'.repeat(7989),
+ columns:['Column'+'c'.repeat(7994)],
+ rows:Array.from({length:25},()=>[character.repeat(8000)])
+});
+
+test('table cell budget accepts 200000 units without counting title description or columns',()=>{
+ const table=tableBudgetFixture();
+ assert.equal(table.rows.flat().reduce((sum,cell)=>sum+cell.length,0),200000);
+ for(const value of [table.title,table.description,table.columns[0]]) assert.equal(value.length,8000);
+ const html=renderPage(page([table]));
+ assert.ok(html.includes(`<caption>${table.title} <span class="ts-table-description">${table.description}</span></caption>`));
+ assert.ok(html.includes(`<th scope="col">${table.columns[0]}</th>`));
+});
+
+test('table cell budget rejects 200001 aggregate units within individual field bounds',()=>{
+ const table=tableBudgetFixture();table.rows.push(['x']);
+ assert.equal(table.rows.flat().reduce((sum,cell)=>sum+cell.length,0),200001);
+ assert.ok(table.rows.flat().every(cell=>cell.length<=8000));
+ assert.throws(()=>renderPage(page([table])),{name:'RangeError',code:'ERR_TESSERAE_VALIDATION',path:'$.components[0].rows'});
+});
+
+test('table budget counts UTF16 units in cells rendered as native row headers',()=>{
+ const table={...tableBudgetFixture(),rowHeaders:true,rows:Array.from({length:25},()=>['😀'.repeat(4000)])};
+ assert.ok(table.rows.every(([cell])=>cell.length===8000));
+ assert.equal(table.rows.flat().reduce((sum,cell)=>sum+cell.length,0),200000);
+ const html=renderPage(page([table]));
+ assert.equal((html.match(/<th scope="row">/g)||[]).length,25);
+ assert.equal((html.match(/😀/gu)||[]).length,100000);
+ table.rows.push(['x']);
+ assert.throws(()=>renderPage(page([table])),{name:'RangeError',code:'ERR_TESSERAE_VALIDATION',path:'$.components[0].rows'});
+});
+
+test('ordinary tables have separate cell budgets within the final output bound',()=>{
+ const html=renderPage(page([tableBudgetFixture(),tableBudgetFixture('y')]));
+ assert.ok(Buffer.byteLength(html)<1024*1024);
+ assert.equal((html.match(/<table>/g)||[]).length,2);
+ for(const character of ['x','y']) assert.ok(html.includes('<td>'+character.repeat(8000)+'</td>'));
+});
+
+test('table metadata keeps its individual 8000-unit text bounds',()=>{
+ for(const [field,path] of [['title','title'],['description','description'],['columns','columns[0]']]) {
+  const table=tableBudgetFixture();table[field]=field==='columns'?['x'.repeat(8001)]:'x'.repeat(8001);
+  assert.throws(()=>renderPage(page([table])),{name:'TypeError',code:'ERR_TESSERAE_VALIDATION',path:'$.components[0].'+path});
+ }
+});
+
+test('valid table cell budgets still obey the final UTF8 output bound after escaping',()=>{
+ const table=tableBudgetFixture('&');
+ assert.ok(Buffer.byteLength(renderPage(page([table])))<1024*1024);
+ assert.throws(()=>renderPage(page([table,table])),{name:'RangeError',code:'ERR_TESSERAE_VALIDATION',path:'$'});
+});
+
 test('themes/density/mode do not change content contract',()=>{
  const model=page([{type:'metric',title:'Count',value:12,unit:'items'}]);for(const theme of ['slate','sand'])for(const mode of ['auto','dark','light'])for(const density of ['compact','comfortable'])assert.match(renderPage({...model,theme,mode,density}),/12 <small>items<\/small>/);
 });
