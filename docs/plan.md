@@ -1,7 +1,7 @@
 # Scoped delivery plan
 
 1. **Foundation (this slice):** original semantic tokens, eight inert components, two synthetic layouts, deterministic renderer and injection/bounds tests. Independent review required; visual QA remains unverified.
-2. **Integration proof:** map a small supported Foundry model subset with explicit errors for unsupported charts/diagrams. Pin the dependency/artifact version, preserve Foundry hashes and drift checks, add roundtrip fixtures. Do not fork two independently evolving component catalogues.
+2. **Integration proof:** map a small supported Foundry model subset with explicit errors for unsupported charts/diagrams. Pin the dependency/artifact version, preserve Foundry hashes and drift checks, add roundtrip fixtures. Do not fork two independently evolving component catalogues. Status: consumer fixtures under `test/fixtures/foundry/` pin Foundry's export shape at commit `357ef62`; the adapter lives in Foundry. A real Foundry-run roundtrip and hash/drift checks remain unverified.
 3. **Component gallery and QA:** deterministic fixtures now cover every component, empty states, long text and all 12 theme/mode/density combinations. Manual QA remains pending: independently inspect light/dark, narrow/wide and printed output, contrast and keyboard focus. Honour any existing preview restrictions; never claim visual coverage from structural tests.
 4. **Higher-level components:** grouped evidence tables and metadata are now available as bounded plain-text HTML primitives. Future chart/diagram panels need accessible data/text alternatives and contract/privacy review.
 

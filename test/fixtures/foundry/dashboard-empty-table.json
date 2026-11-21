@@ -1,0 +1,1 @@
+{"version":"tesserae/v1","kind":"dashboard","title":"Synthetic empty table","category":"Generated dashboard","footer":"Generated from dashboard/v1 data.","components":[{"type":"table","title":"Records","columns":["Name"],"rows":[]}]}

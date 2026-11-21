@@ -38,6 +38,8 @@ existing HTML validator, not a new shared validator or accepted input shape.
 
 Foundry's existing Go `dashboard/v1` and local `report/v1` schemas remain domain/generation contracts. They must not be silently replaced with this presentation model. A future **explicit, version-pinned adapter** should map accepted models into supported Tesserae components and reject unsupported features. Chart/diagram support is not implemented in this slice. Foundry's canonical model hashes, manifests, ownership guards and output-size rules stay in Foundry. The present Node API does not imply that Go pipelines should shell out to Node; decide between shared CSS assets, a Go adapter, or a versioned renderer protocol only after a small integration proof.
 
+Consumer fixtures under `test/fixtures/foundry/` now pin the `tesserae/v1` shape that Foundry's `modeling/diagram/tesserae/export.go` emits at commit `357ef62`. They are hand-authored and synthetic, and a test checks their top-level keys and renders them. The adapter lives in Foundry, not here. A real Foundry-run roundtrip and Foundry's hash and drift checks have not been verified against this package.
+
 The current Foundry code is unchanged. No generated output is yet using this package automatically. A future SolidJS adapter can share tokens and semantic vocabulary without requiring static reports to ship client JavaScript.
 
 ## Layered repository
