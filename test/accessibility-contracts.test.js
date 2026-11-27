@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { renderPage } from '../html/index.js';
+import { galleryModel } from '../examples/gallery-model.js';
 
 // Source-token contract, not a CSS cascade emulator or browser accessibility audit.
 const css = readFileSync(new URL('../themes/tokens.css', import.meta.url), 'utf8');
@@ -60,4 +61,22 @@ test('metric absence states remain visible text distinct from numeric zero', () 
     assert.throws(() => renderPage(page([{type:'metric',title:'Measurement',state,value:0}])));
   }
   assert.match(renderPage(page([{type:'metric',title:'Measurement',value:0}])), /<p class="ts-value">0<\/p>/);
+});
+
+test('gallery tables expose named keyboard scroll regions in native table order', () => {
+  // Markup contract only: focus movement, outlines and scrolling need a browser.
+  const html = renderPage(galleryModel);
+  const regions = [...html.matchAll(/<div\b([^>]*\bclass="ts-table-scroll"[^>]*)><table><caption>([^<]+).*?<\/table><\/div>/gs)];
+  const titles = ['Fictional evidence', 'Invented group A', 'Reviewed empty group', 'Empty table'];
+  assert.equal(regions.length, titles.length);
+  assert.equal((html.match(/<table>/g) ?? []).length, titles.length);
+  for (const [index, [region, attributes, caption]] of regions.entries()) {
+    const title = titles[index];
+    assert.match(attributes, /\srole="region"(?:\s|$)/);
+    assert.match(attributes, /\stabindex="0"(?:\s|$)/);
+    assert.doesNotMatch(attributes, /\saria-hidden=/);
+    assert.equal(attributes.match(/\saria-label="([^"]+)"/)?.[1], title);
+    assert.equal(caption.trim(), title);
+    assert.match(region, /<th scope="col">/);
+  }
 });
