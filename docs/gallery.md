@@ -29,7 +29,12 @@ When browser review is permitted, inspect:
 
 - Narrow and wide viewports: long words, table overflow and readable text.
 - Light, dark and both system preferences for auto; both densities and themes.
-- Keyboard navigation and visible focus on the gallery index links.
+- Keyboard navigation and visible focus on the gallery index links. Open a
+  gallery page at about 360 CSS pixels, then Tab through Fictional evidence,
+  Invented group A, Reviewed empty group and Empty table in that order. Check
+  the focus outline, and use the arrow keys to scroll an overflowing table
+  without moving the page horizontally. Repeat at a wide viewport and in the
+  RTL fixture; use the direction that reveals more columns.
 - Heading, caption, row-header, definition-list and progress announcements with
   assistive technology, including empty states and metric absence values.
 - Print preview: repeated table headings, sensible breaks and contrast.
